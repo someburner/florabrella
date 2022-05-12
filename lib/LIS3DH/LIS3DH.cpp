@@ -25,6 +25,7 @@
 #include <Wire.h>
 
 #include "LIS3DH.h"
+#include "LIS3DH_REG.h"
 
 /*!
  *  @brief  Instantiates a new LIS3DH class in I2C
@@ -322,7 +323,7 @@ uint8_t LIS3DH::getClick() {
  *   @param  range
  *           range value
  */
-void LIS3DH::setRange(lis3dh_range_t range) {
+void LIS3DH::setRange(uint8_t range) {
   uint8_t r = readRegister8(CTRL_REG4);
   r &= ~(0x30);
   r |= range << 4;
@@ -333,9 +334,9 @@ void LIS3DH::setRange(lis3dh_range_t range) {
  *  @brief  Gets the g range for the accelerometer
  *  @return Returns g range value
  */
-lis3dh_range_t LIS3DH::getRange() {
+uint8_t LIS3DH::getRange() {
   /* Read the data format register to preserve bits */
-  return (lis3dh_range_t)((readRegister8(CTRL_REG4) >> 4) & 0x03);
+  return (readRegister8(CTRL_REG4) >> 4) & 0x03;
 }
 
 /*!
@@ -343,7 +344,7 @@ lis3dh_range_t LIS3DH::getRange() {
  *  @param  dataRate
  *          data rate value
  */
-void LIS3DH::setDataRate(lis3dh_dataRate_t dataRate) {
+void LIS3DH::setDataRate(uint8_t dataRate) {
   uint8_t ctl1 = readRegister8(CTRL_REG1);
   ctl1 &= ~(0xF0); // mask off bits
   ctl1 |= (dataRate << 4);
@@ -354,8 +355,8 @@ void LIS3DH::setDataRate(lis3dh_dataRate_t dataRate) {
  *   @brief  Gets the data rate for the LIS3DH (controls power consumption)
  *   @return Returns Data Rate value
  */
-lis3dh_dataRate_t LIS3DH::getDataRate() {
-  return (lis3dh_dataRate_t)((readRegister8(CTRL_REG1) >> 4) & 0x0F);
+uint8_t LIS3DH::getDataRate() {
+  return (readRegister8(CTRL_REG1) >> 4) & 0x0F;
 }
 
 /*!

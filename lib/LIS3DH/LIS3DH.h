@@ -32,7 +32,6 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#include "LIS3DH_REG.h"
 #include "Sensor.h"
 
 /*!
@@ -53,11 +52,11 @@ public:
   void read();
   int16_t readADC(uint8_t a);
 
-  void setRange(lis3dh_range_t range);
-  lis3dh_range_t getRange(void);
+  void setRange(uint8_t range);
+  uint8_t getRange(void);
 
-  void setDataRate(lis3dh_dataRate_t dataRate);
-  lis3dh_dataRate_t getDataRate(void);
+  void setDataRate(uint8_t dataRate);
+  uint8_t getDataRate(void);
 
   bool getEvent(sensors_event_t *event);
   void getSensor(sensor_t *sensor);
