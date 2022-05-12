@@ -22,9 +22,9 @@
  */
 
 #include "Arduino.h"
-
-#include <LIS3DH.h>
 #include <Wire.h>
+
+#include "LIS3DH.h"
 
 /*!
  *  @brief  Instantiates a new LIS3DH class in I2C
@@ -80,7 +80,7 @@ LIS3DH::LIS3DH(int8_t cspin, int8_t mosipin, int8_t misopin,
  *          Who Am I register value - defaults to 0x33 (LIS3DH)
  *  @return true if successful
  */
-bool LIS3DH::begin(uint8_t i2caddr, uint8_t nWAI) {
+bool LIS3DH::begin(uint8_t i2caddr = I2C_ADDR, uint8_t nWAI) {
   _i2caddr = i2caddr;
   _wai = nWAI;
 
@@ -115,7 +115,7 @@ bool LIS3DH::begin(uint8_t i2caddr, uint8_t nWAI) {
   */
 
   /* Check connection */
-  uint8_t deviceid = readRegister8(LIS3DH_REG_WHOAMI);
+  uint8_t deviceid = readRegister8(WHO_AM_I);
   if (deviceid != _wai) {
     /* No LIS3DH detected ... return false */
     // Serial.println(deviceid, HEX);
@@ -126,22 +126,22 @@ bool LIS3DH::begin(uint8_t i2caddr, uint8_t nWAI) {
   // uint8_t ctrl_reg1 = (1 << lis3dh_ctrl_reg1_lp_en) | (1 << lis3dh_ctrl_reg1_z_en)
   uint8_t ctrl_reg1 = (1 << lis3dh_ctrl_reg1_z_en)
   ;
-  writeRegister8(LIS3DH_REG_CTRL1, ctrl_reg1);
+  writeRegister8(CTRL_REG1, ctrl_reg1);
   // 50hz rate
   setDataRate(LIS3DH_DATARATE_50_HZ);
 
   // High res & BDU enabled
-  // writeRegister8(LIS3DH_REG_CTRL4, 0x88);
+  // writeRegister8(CTRL_REG4, 0x88);
 
   // DRDY on INT1
-  // writeRegister8(LIS3DH_REG_CTRL3, 0x10);
-  writeRegister8(LIS3DH_REG_CTRL3, 0x40); // IA1
+  // writeRegister8(CTRL_REG3, 0x10);
+  writeRegister8(CTRL_REG3, 0x40); // IA1
 
   // Turn on orientation config
   // writeRegister8(LIS3DH_REG_PL_CFG, 0x40);
 
   // enable adcs
-  writeRegister8(LIS3DH_REG_TEMPCFG, 0x80);
+  writeRegister8(TEMP_CFG_REG, 0x80);
 
   /*
   for (uint8_t i=0; i<0x30; i++) {
@@ -155,11 +155,11 @@ bool LIS3DH::begin(uint8_t i2caddr, uint8_t nWAI) {
 }
 
 /*!
- *  @brief  Get Device ID from LIS3DH_REG_WHOAMI
+ *  @brief  Get Device ID from WHO_AM_I
  *  @return WHO AM I value
  */
 uint8_t LIS3DH::getDeviceID() {
-  return readRegister8(LIS3DH_REG_WHOAMI);
+  return readRegister8(WHO_AM_I);
 }
 
 /*!
@@ -168,7 +168,7 @@ uint8_t LIS3DH::getDeviceID() {
  */
 bool LIS3DH::haveNewData() {
 	// checking ZYXDA in REG_STATUS2 tells us if data available
- 	return (readRegister8(LIS3DH_REG_STATUS2) & 0x8) >> 3;
+ 	return (readRegister8(STATUS_REG) & 0x8) >> 3;
 }
 
 /*!
@@ -178,7 +178,7 @@ void LIS3DH::read() {
   if (_cs == -1) {
     // i2c
     I2Cinterface->beginTransmission(_i2caddr);
-    I2Cinterface->write(LIS3DH_REG_OUT_X_L | 0x80); // 0x80 for autoincrement
+    I2Cinterface->write(OUT_X_L | 0x80); // 0x80 for autoincrement
     I2Cinterface->endTransmission();
 
     I2Cinterface->requestFrom(_i2caddr, 6);
@@ -194,7 +194,7 @@ void LIS3DH::read() {
     if (_sck == -1)
       SPIinterface->beginTransaction(SPISettings(500000, MSBFIRST, SPI_MODE0));
     digitalWrite(_cs, LOW);
-    spixfer(LIS3DH_REG_OUT_X_L | 0x80 | 0x40); // read multiple, bit 7&6 high
+    spixfer(OUT_X_L | 0x80 | 0x40); // read multiple, bit 7&6 high
 
     x = spixfer();
     x |= ((uint16_t)spixfer()) << 8;
@@ -237,7 +237,7 @@ int16_t LIS3DH::readADC(uint8_t adc) {
 
   adc--;
 
-  uint8_t reg = LIS3DH_REG_OUTADC1_L + adc * 2;
+  uint8_t reg = OUT_ADC1_L + adc * 2;
 
   if (_cs == -1) {
     // i2c
@@ -287,34 +287,34 @@ void LIS3DH::setClick(uint8_t c, uint8_t clickthresh,
                                uint8_t timewindow) {
   if (!c) {
     // disable int
-    uint8_t r = readRegister8(LIS3DH_REG_CTRL3);
+    uint8_t r = readRegister8(CTRL_REG3);
     r &= ~(0x80); // turn off I1_CLICK
-    writeRegister8(LIS3DH_REG_CTRL3, r);
-    writeRegister8(LIS3DH_REG_CLICKCFG, 0);
+    writeRegister8(CTRL_REG3, r);
+    writeRegister8(CLICK_CFG, 0);
     return;
   }
   // else...
 
-  writeRegister8(LIS3DH_REG_CTRL3, 0x80); // turn on int1 click
-  writeRegister8(LIS3DH_REG_CTRL5, 0x08); // latch interrupt on int1
+  writeRegister8(CTRL_REG3, 0x80); // turn on int1 click
+  writeRegister8(CTRL_REG5, 0x08); // latch interrupt on int1
 
   if (c == 1)
-    writeRegister8(LIS3DH_REG_CLICKCFG, 0x15); // turn on all axes & singletap
+    writeRegister8(CLICK_CFG, 0x15); // turn on all axes & singletap
   if (c == 2)
-    writeRegister8(LIS3DH_REG_CLICKCFG, 0x2A); // turn on all axes & doubletap
+    writeRegister8(CLICK_CFG, 0x2A); // turn on all axes & doubletap
 
-  writeRegister8(LIS3DH_REG_CLICKTHS, clickthresh);    // arbitrary
-  writeRegister8(LIS3DH_REG_TIMELIMIT, timelimit);     // arbitrary
-  writeRegister8(LIS3DH_REG_TIMELATENCY, timelatency); // arbitrary
-  writeRegister8(LIS3DH_REG_TIMEWINDOW, timewindow);   // arbitrary
+  writeRegister8(CLICK_THS, clickthresh);    // arbitrary
+  writeRegister8(TIME_LIMIT, timelimit);     // arbitrary
+  writeRegister8(TIME_LATENCY, timelatency); // arbitrary
+  writeRegister8(TIME_WINDOW, timewindow);   // arbitrary
 }
 
 /*!
  *   @brief  Get uint8_t for single or double click
- *   @return register LIS3DH_REG_CLICKSRC
+ *   @return register CLICK_SRC
  */
 uint8_t LIS3DH::getClick() {
-  return readRegister8(LIS3DH_REG_CLICKSRC);
+  return readRegister8(CLICK_SRC);
 }
 
 /*!
@@ -323,10 +323,10 @@ uint8_t LIS3DH::getClick() {
  *           range value
  */
 void LIS3DH::setRange(lis3dh_range_t range) {
-  uint8_t r = readRegister8(LIS3DH_REG_CTRL4);
+  uint8_t r = readRegister8(CTRL_REG4);
   r &= ~(0x30);
   r |= range << 4;
-  writeRegister8(LIS3DH_REG_CTRL4, r);
+  writeRegister8(CTRL_REG4, r);
 }
 
 /*!
@@ -335,7 +335,7 @@ void LIS3DH::setRange(lis3dh_range_t range) {
  */
 lis3dh_range_t LIS3DH::getRange() {
   /* Read the data format register to preserve bits */
-  return (lis3dh_range_t)((readRegister8(LIS3DH_REG_CTRL4) >> 4) & 0x03);
+  return (lis3dh_range_t)((readRegister8(CTRL_REG4) >> 4) & 0x03);
 }
 
 /*!
@@ -344,10 +344,10 @@ lis3dh_range_t LIS3DH::getRange() {
  *          data rate value
  */
 void LIS3DH::setDataRate(lis3dh_dataRate_t dataRate) {
-  uint8_t ctl1 = readRegister8(LIS3DH_REG_CTRL1);
+  uint8_t ctl1 = readRegister8(CTRL_REG1);
   ctl1 &= ~(0xF0); // mask off bits
   ctl1 |= (dataRate << 4);
-  writeRegister8(LIS3DH_REG_CTRL1, ctl1);
+  writeRegister8(CTRL_REG1, ctl1);
 }
 
 /*!
@@ -355,7 +355,7 @@ void LIS3DH::setDataRate(lis3dh_dataRate_t dataRate) {
  *   @return Returns Data Rate value
  */
 lis3dh_dataRate_t LIS3DH::getDataRate() {
-  return (lis3dh_dataRate_t)((readRegister8(LIS3DH_REG_CTRL1) >> 4) & 0x0F);
+  return (lis3dh_dataRate_t)((readRegister8(CTRL_REG1) >> 4) & 0x0F);
 }
 
 /*!
@@ -510,13 +510,13 @@ void LIS3DH::intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool 
       val = (1 << lis3dh_int1_cfg_zl_ie);
 
     // _DEBBUG ("LIS3DH_INT_CFG: 0x", val);
-    writeRegister8(LIS3DH_REG_INT1CFG, val);
+    writeRegister8(INT1_CFG, val);
 
     //Build INT_THS 0x32 or 0x36
-    writeRegister8(LIS3DH_REG_INT1THS, threshold);
+    writeRegister8(INT1_THS, threshold);
 
     //Build INT_DURATION 0x33 or 0x37
-    writeRegister8(LIS3DH_REG_INT1DUR, timeDur);
+    writeRegister8(INT1_DURATION, timeDur);
 
     val = 0 | (polarity << 1);
 
@@ -524,13 +524,13 @@ void LIS3DH::intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool 
     // if(interrupt == 1)
     if(true)
     {
-      writeRegister8(LIS3DH_REG_CTRL3, 0x40);
+      writeRegister8(CTRL_REG3, 0x40);
     }
     else
     {
       // val |= 0x20;
     }
 
-    writeRegister8(LIS3DH_REG_CTRL6, val);
+    writeRegister8(CTRL_REG6, val);
 
 }
