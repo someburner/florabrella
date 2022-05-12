@@ -32,65 +32,57 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#include "Sensor.h"
-
-/*!
- *  @brief  Class that stores state and functions for interacting with
- *          Adafruit_LIS3DH
- */
-class LIS3DH : public Adafruit_Sensor {
+class LIS3DH
+{
 public:
-  LIS3DH(TwoWire *Wi = &Wire);
-  LIS3DH(int8_t cspin, SPIClass *theSPI = &SPI);
-  LIS3DH(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
+    LIS3DH(TwoWire *Wi = &Wire);
+    LIS3DH(int8_t cspin, SPIClass *theSPI = &SPI);
+    LIS3DH(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin);
 
-  bool begin(uint8_t addr, uint8_t nWAI = 0x33);
+    bool begin(uint8_t addr, uint8_t nWAI = 0x33);
 
-  uint8_t getDeviceID();
-  bool haveNewData();
+    uint8_t getDeviceID();
+    bool haveNewData();
 
-  void read();
-  int16_t readADC(uint8_t a);
+    void read();
+    int16_t readADC(uint8_t a);
 
-  void setRange(uint8_t range);
-  uint8_t getRange(void);
+    void setRange(uint8_t range);
+    uint8_t getRange(void);
 
-  void setDataRate(uint8_t dataRate);
-  uint8_t getDataRate(void);
+    void setDataRate(uint8_t dataRate);
+    uint8_t getDataRate(void);
 
-  bool getEvent(sensors_event_t *event);
-  void getSensor(sensor_t *sensor);
+    void setClick(uint8_t c, uint8_t clickthresh, uint8_t timelimit = 10,
+                  uint8_t timelatency = 20, uint8_t timewindow = 255);
+    uint8_t getClick(void);
 
-  void setClick(uint8_t c, uint8_t clickthresh, uint8_t timelimit = 10,
-                uint8_t timelatency = 20, uint8_t timewindow = 255);
-  uint8_t getClick(void);
+    void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
 
-  void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
+    int16_t x; /**< x axis value */
+    int16_t y; /**< y axis value */
+    int16_t z; /**< z axis value */
 
-  int16_t x; /**< x axis value */
-  int16_t y; /**< y axis value */
-  int16_t z; /**< z axis value */
-
-  float x_g; /**< x_g axis value (calculated by selected range) */
-  float y_g; /**< y_g axis value (calculated by selected range) */
-  float z_g; /**< z_g axis value (calculated by selected scale) */
+    float x_g; /**< x_g axis value (calculated by selected range) */
+    float y_g; /**< y_g axis value (calculated by selected range) */
+    float z_g; /**< z_g axis value (calculated by selected scale) */
 
 protected:
-  uint8_t spixfer(uint8_t x = 0xFF);
-  void writeRegister8(uint8_t reg, uint8_t value);
-  uint8_t readRegister8(uint8_t reg);
+    uint8_t spixfer(uint8_t x = 0xFF);
+    void writeRegister8(uint8_t reg, uint8_t value);
+    uint8_t readRegister8(uint8_t reg);
 
 private:
-  TwoWire *I2Cinterface;
-  SPIClass *SPIinterface;
+    TwoWire *I2Cinterface;
+    SPIClass *SPIinterface;
 
-  uint8_t _wai;
+    uint8_t _wai;
 
-  int8_t _cs, _mosi, _miso, _sck;
+    int8_t _cs, _mosi, _miso, _sck;
 
-  int8_t _i2caddr;
+    int8_t _i2caddr;
 
-  int32_t _sensorID;
+    int32_t _sensorID;
 };
 
 #endif

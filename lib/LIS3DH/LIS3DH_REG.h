@@ -41,14 +41,14 @@
 #define CTRL_REG1 0x20
 
 typedef enum {
-  lis3dh_ctrl_reg1_x_en = 0,
-  lis3dh_ctrl_reg1_y_en,
-  lis3dh_ctrl_reg1_z_en,
-  lis3dh_ctrl_reg1_lp_en,
-  lis3dh_ctrl_reg1_odr0,
-  lis3dh_ctrl_reg1_odr1,
-  lis3dh_ctrl_reg1_odr2,
-  lis3dh_ctrl_reg1_odr3
+    lis3dh_ctrl_reg1_x_en = 0,
+    lis3dh_ctrl_reg1_y_en,
+    lis3dh_ctrl_reg1_z_en,
+    lis3dh_ctrl_reg1_lp_en,
+    lis3dh_ctrl_reg1_odr0,
+    lis3dh_ctrl_reg1_odr1,
+    lis3dh_ctrl_reg1_odr2,
+    lis3dh_ctrl_reg1_odr3
 } lis3dh_ctrl_reg1_t;
 
 /*!
@@ -148,6 +148,7 @@ typedef enum {
  * available)
  */
 #define STATUS_REG 0x27
+
 #define OUT_X_L 0x28 /**< X-axis acceleration data. Low value */
 #define OUT_X_H 0x29 /**< X-axis acceleration data. High value */
 #define OUT_Y_L 0x2A /**< Y-axis acceleration data. Low value */
@@ -191,14 +192,14 @@ typedef enum {
 #define INT1_CFG 0x30
 
 typedef enum {
-  lis3dh_int1_cfg_xl_ie = 0,
-  lis3dh_int1_cfg_xh_ie,
-  lis3dh_int1_cfg_yl_ie,
-  lis3dh_int1_cfg_yh_ie,
-  lis3dh_int1_cfg_zl_ie,
-  lis3dh_int1_cfg_zh_ie,
-  lis3dh_int1_cfg_6d_en,
-  lis3dh_int1_cfg_aoi, // and-or combination of interrupts: if 6d disabled, 0 = or, 1 = and
+    lis3dh_int1_cfg_xl_ie = 0,
+    lis3dh_int1_cfg_xh_ie,
+    lis3dh_int1_cfg_yl_ie,
+    lis3dh_int1_cfg_yh_ie,
+    lis3dh_int1_cfg_zl_ie,
+    lis3dh_int1_cfg_zh_ie,
+    lis3dh_int1_cfg_6d_en,
+    lis3dh_int1_cfg_aoi, // and-or combination of interrupts: if 6d disabled, 0 = or, 1 = and
 } lis3dh_int1_cfg_t;
 
 /*!
@@ -244,6 +245,7 @@ typedef enum {
  * accel. value higher than preset threshold)
  */
 #define CLICK_CFG 0x38
+
 /*!
  *  CLICK_SRC
  *   [-, IA, DCLICK, SCLICK, Sign, Z, Y, X]
@@ -262,24 +264,28 @@ typedef enum {
  *           (0: no interrupt, 1: X High event has occurred)
  */
 #define CLICK_SRC 0x39
+
 /*!
  *  CLICK_THS
  *   [-, Ths6, Ths5, Ths4, Ths3, Ths2, Ths1, Ths0]
  *   Ths6-Ths0  CLICK-CLICK threshold. Default value: 000 0000
  */
 #define CLICK_THS 0x3A
+
 /*!
  *  TIME_LIMIT
  *   [-, TLI6, TLI5, TLI4, TLI3, TLI2, TLI1, TLI0]
  *   TLI7-TLI0  CLICK-CLICK Time Limit. Default value: 000 0000
  */
 #define TIME_LIMIT 0x3B
+
 /*!
  *  TIME_LATANCY
  *   [-, TLA6, TLIA5, TLA4, TLA3, TLA2, TLA1, TLA0]
  *   TLA7-TLA0  CLICK-CLICK Time Latency. Default value: 000 0000
  */
 #define TIME_LATENCY 0x3C
+
 /*!
  *  TIME_WINDOW
  *   [TW7, TW6, TW5, TW4, TW3, TW2, TW1, TW0]
@@ -289,17 +295,17 @@ typedef enum {
 
 /** A structure to represent scales **/
 typedef enum {
-  LIS3DH_RANGE_16_G = 0b11, // +/- 16g
-  LIS3DH_RANGE_8_G = 0b10,  // +/- 8g
-  LIS3DH_RANGE_4_G = 0b01,  // +/- 4g
-  LIS3DH_RANGE_2_G = 0b00   // +/- 2g (default value)
+    LIS3DH_RANGE_16_G = 0b11, // +/- 16g
+    LIS3DH_RANGE_8_G = 0b10,  // +/- 8g
+    LIS3DH_RANGE_4_G = 0b01,  // +/- 4g
+    LIS3DH_RANGE_2_G = 0b00   // +/- 2g (default value)
 } lis3dh_range_t;
 
 /** A structure to represent axes **/
 typedef enum {
-  LIS3DH_AXIS_X = 0x0,
-  LIS3DH_AXIS_Y = 0x1,
-  LIS3DH_AXIS_Z = 0x2,
+    LIS3DH_AXIS_X = 0x0,
+    LIS3DH_AXIS_Y = 0x1,
+    LIS3DH_AXIS_Z = 0x2,
 } lis3dh_axis_t;
 
 /** Used with register 0x2A (LIS3DH_REG_CTRL_REG1) to set bandwidth **/
