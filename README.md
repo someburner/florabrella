@@ -10,3 +10,4 @@ Personal edits for Adafruit [FLORAbrella](https://learn.adafruit.com/florabrella
 
 - [product link](https://www.adafruit.com/product/3333)
 - [sample code](https://github.com/adafruit/Adafruit_CircuitPlayground)
+- [downloads (cad, schematics, etc)](https://learn.adafruit.com/adafruit-circuit-playground-express/downloads)
