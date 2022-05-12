@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
 #include "FastLED.h"
+#include "LIS3DH.h"
 
 #define DATA_PIN_ONBOARD    CPLAY_NEOPIXELPIN
 #define LED_TYPE_ONBOARD    WS2812B
@@ -12,6 +13,9 @@ CRGB leds_onboard[NUM_LEDS_ONBOARD];
 #define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
+
+LIS3DH accel;
+
 void setup(void)
 {
     Serial.begin(115200);
@@ -20,6 +24,14 @@ void setup(void)
     FastLED.addLeds<LED_TYPE_ONBOARD,DATA_PIN_ONBOARD,COLOR_ORDER_ONBOARD>(leds_onboard, NUM_LEDS_ONBOARD).setCorrection(TypicalLEDStrip);
     FastLED.clear(true);
     FastLED.setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
+
+    Serial.print("LIS3DH init: ");
+    accel = LIS3DH(&Wire1); // i2c on wire1
+    if(accel.begin(CPLAY_LIS3DH_ADDRESS)) {
+        Serial.println("success");
+    } else {
+        Serial.println("fail");
+    }
 }
 
 static void testPixels(void)
@@ -37,9 +49,21 @@ static void testPixels(void)
     // EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
 }
 
+static void testAccel(void)
+{
+    accel.read();
+    Serial.print(accel.x_g);
+    Serial.print(',');
+    Serial.print(accel.y_g);
+    Serial.print(',');
+    Serial.println(accel.z_g);
+}
+
+
 void loop(void)
 {
-    testPixels();
+    // testPixels();
+    testAccel();
 }
 
 #if 0
