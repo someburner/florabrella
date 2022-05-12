@@ -39,8 +39,8 @@ void setup(void)
     }
 
     // void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
-    accel.intConf(1, 13, 2, 0); // active high
-    attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, CHANGE );
+    accel.intConf(1, 13, 10, 0); // active high
+    attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, RISING );
 }
 
 static void testPixels(void)

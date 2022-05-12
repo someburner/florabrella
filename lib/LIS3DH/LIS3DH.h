@@ -88,6 +88,18 @@
  * X axis disabled; 1: X axis enabled)
  */
 #define LIS3DH_REG_CTRL1 0x20
+
+typedef enum {
+  lis3dh_ctrl_reg1_x_en = 0,
+  lis3dh_ctrl_reg1_y_en,
+  lis3dh_ctrl_reg1_z_en,
+  lis3dh_ctrl_reg1_lp_en,
+  lis3dh_ctrl_reg1_odr0,
+  lis3dh_ctrl_reg1_odr1,
+  lis3dh_ctrl_reg1_odr2,
+  lis3dh_ctrl_reg1_odr3
+} lis3dh_ctrl_reg1_t;
+
 /*!
  *  CTRL_REG2
  *  [HPM1, HPM0, HPCF2, HPCF1, FDS, HPCLICK, HPIS2, HPIS1]
@@ -219,6 +231,18 @@
  * enable interrupt request.)
  */
 #define LIS3DH_REG_INT1CFG 0x30
+
+typedef enum {
+  lis3dh_int1_cfg_xl_ie = 0,
+  lis3dh_int1_cfg_xh_ie,
+  lis3dh_int1_cfg_yl_ie,
+  lis3dh_int1_cfg_yh_ie,
+  lis3dh_int1_cfg_zl_ie,
+  lis3dh_int1_cfg_zh_ie,
+  lis3dh_int1_cfg_6d_en,
+  lis3dh_int1_cfg_aoi, // and-or combination of interrupts: if 6d disabled, 0 = or, 1 = and
+} lis3dh_int1_cfg_t;
+
 /*!
  *  INT1_SRC
  *   [0, IA, ZH, ZL, YH, YL, XH, XL]

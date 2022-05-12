@@ -122,16 +122,20 @@ bool LIS3DH::begin(uint8_t i2caddr, uint8_t nWAI) {
     return false;
   }
 
-  // enable all axes, normal mode
-  writeRegister8(LIS3DH_REG_CTRL1, 0x07);
-  // 400Hz rate
-  setDataRate(LIS3DH_DATARATE_400_HZ);
+  // enable z axis only, enable low power
+  // uint8_t ctrl_reg1 = (1 << lis3dh_ctrl_reg1_lp_en) | (1 << lis3dh_ctrl_reg1_z_en)
+  uint8_t ctrl_reg1 = (1 << lis3dh_ctrl_reg1_z_en)
+  ;
+  writeRegister8(LIS3DH_REG_CTRL1, ctrl_reg1);
+  // 50hz rate
+  setDataRate(LIS3DH_DATARATE_50_HZ);
 
   // High res & BDU enabled
-  writeRegister8(LIS3DH_REG_CTRL4, 0x88);
+  // writeRegister8(LIS3DH_REG_CTRL4, 0x88);
 
   // DRDY on INT1
-  writeRegister8(LIS3DH_REG_CTRL3, 0x10);
+  // writeRegister8(LIS3DH_REG_CTRL3, 0x10);
+  writeRegister8(LIS3DH_REG_CTRL3, 0x40); // IA1
 
   // Turn on orientation config
   // writeRegister8(LIS3DH_REG_PL_CFG, 0x40);
@@ -496,29 +500,25 @@ uint8_t LIS3DH::readRegister8(uint8_t reg)
 // moveType 1 = move
 void LIS3DH::intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity)
 {
-    uint8_t dataToWrite = 0;  //Temporary variable
-
-    uint8_t regToWrite = 0;
-    regToWrite = LIS3DH_REG_INT1CFG;
+    uint8_t val = 0;  //Temporary variable
 
     //Build INT_CFG 0x30 or 0x34
     //Detect movement or stop
-    if(moveType == 1)	dataToWrite |= 0x0A;
-    else 							dataToWrite |= 0x05;
+    if(moveType == 1)
+      val = (1 << lis3dh_int1_cfg_zh_ie);
+    else
+      val = (1 << lis3dh_int1_cfg_zl_ie);
 
-    // _DEBBUG ("LIS3DH_INT_CFG: 0x", dataToWrite);
-    writeRegister8(regToWrite, dataToWrite);
+    // _DEBBUG ("LIS3DH_INT_CFG: 0x", val);
+    writeRegister8(LIS3DH_REG_INT1CFG, val);
 
     //Build INT_THS 0x32 or 0x36
-    regToWrite += 2;
-    writeRegister8(regToWrite, threshold);
+    writeRegister8(LIS3DH_REG_INT1THS, threshold);
 
     //Build INT_DURATION 0x33 or 0x37
-    regToWrite++;
+    writeRegister8(LIS3DH_REG_INT1DUR, timeDur);
 
-    writeRegister8(regToWrite, timeDur);
-
-    dataToWrite = 0 | (polarity << 1);
+    val = 0 | (polarity << 1);
 
     //Attach configuration to Interrupt X
     // if(interrupt == 1)
@@ -528,9 +528,9 @@ void LIS3DH::intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool 
     }
     else
     {
-      // dataToWrite |= 0x20;
+      // val |= 0x20;
     }
 
-    writeRegister8(LIS3DH_REG_CTRL6, dataToWrite);
+    writeRegister8(LIS3DH_REG_CTRL6, val);
 
 }
