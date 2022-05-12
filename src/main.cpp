@@ -1,32 +1,50 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
-#include "NeoPixel.h"
+#include "FastLED.h"
 
-Adafruit_CPlay_NeoPixel strip;
-uint8_t brightness = 32;
+#define DATA_PIN_ONBOARD    CPLAY_NEOPIXELPIN
+#define LED_TYPE_ONBOARD    WS2812B
+#define COLOR_ORDER_ONBOARD RGB
+#define NUM_LEDS_ONBOARD    CPLAY_NUMPIXELS
+#define DEFAULT_BRIGHTNESS_ONBOARD 32
+CRGB leds_onboard[NUM_LEDS_ONBOARD];
 
-static void clearPixels(void)
+#define FRAMES_PER_SECOND  120
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+
+void setup(void)
 {
-    strip.clear();
-    strip.show();
+    Serial.begin(115200);
+    Serial.println("hello");
+
+    FastLED.addLeds<LED_TYPE_ONBOARD,DATA_PIN_ONBOARD,COLOR_ORDER_ONBOARD>(leds_onboard, NUM_LEDS_ONBOARD).setCorrection(TypicalLEDStrip);
+    FastLED.clear(true);
+    FastLED.setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
 }
 
-// set the color of a neopixel on the board
-// p: the pixel to set. Pixel 0 is above the pad labeled 'GND' right next to the
-// USB connector, while pixel 9 is above the pad labeled '3.3V' on the other
-// side of the USB connector.
-// c: a 24bit color value to set the pixel to
-static void setPixelColor(uint8_t p, uint32_t c)
+static void testPixels(void)
 {
-    strip.setPixelColor(p, c);
-    strip.show();
+    // Serial.println("testPixels");
+    fill_rainbow(leds_onboard, NUM_LEDS_ONBOARD, gHue, 7);
+
+    // send the 'leds' array out to the actual LED strip
+    FastLED.show();
+    // insert a delay to keep the framerate modest
+    FastLED.delay(1000/FRAMES_PER_SECOND);
+
+    // do some periodic updates
+    EVERY_N_MILLISECONDS( 50 ) { gHue++; } // slowly cycle the "base color" through the rainbow
+    // EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
 }
 
-static void setPixelColor(uint8_t p, uint8_t r, uint8_t g, uint8_t b)
+void loop(void)
 {
-    strip.setPixelColor(p, r, g, b);
-    strip.show();
+    testPixels();
 }
+
+#if 0
+
+// TODO: implement light sense with FastLED
 
 // read the onboard lightsensor
 // returns value between 0 and 1023 read from the light sensor
@@ -37,39 +55,6 @@ static void setPixelColor(uint8_t p, uint8_t r, uint8_t g, uint8_t b)
 static uint16_t lightSensor(void)
 {
     return analogRead(CPLAY_LIGHTSENSOR);
-}
-
-void setup(void)
-{
-    Serial.begin(115200);
-    Serial.println("hello");
-
-    // strip setup
-    strip = Adafruit_CPlay_NeoPixel();
-    strip.updateType(NEO_GRB + NEO_KHZ800);
-    strip.updateLength(10);
-    strip.setPin(CPLAY_NEOPIXELPIN);
-
-    strip.begin();
-    strip.show(); // Initialize all pixels to 'off'
-    strip.setBrightness(brightness);
-}
-
-static void testPixels(void)
-{
-    Serial.println("testPixels");
-
-    setPixelColor(0, 255,   0,   0);
-    setPixelColor(1, 128, 128,   0);
-    setPixelColor(2,   0, 255,   0);
-    setPixelColor(3,   0, 128, 128);
-    setPixelColor(4,   0,   0, 255);
-
-    setPixelColor(5, 0xFF0000);
-    setPixelColor(6, 0x808000);
-    setPixelColor(7, 0x00FF00);
-    setPixelColor(8, 0x008080);
-    setPixelColor(9, 0x0000FF);
 }
 
 // Configuration to tune the color sensing logic: Amount of time (in millis) to
@@ -125,17 +110,4 @@ static void testLightSense(void)
     Serial.print(" blue=");
     Serial.println(blue, DEC);
 }
-
-void loop(void)
-{
-    // delay(1000);
-    // Serial.println(millis());
-    clearPixels();
-    delay(500);
-
-    // testPixels();
-    testLightSense();
-
-
-    delay(1000);
-}
+#endif
