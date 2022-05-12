@@ -16,6 +16,11 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 LIS3DH accel;
 
+void accel_isr()
+{
+    Serial.println("isr!");
+}
+
 void setup(void)
 {
     Serial.begin(115200);
@@ -32,6 +37,10 @@ void setup(void)
     } else {
         Serial.println("fail");
     }
+
+    // void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
+    accel.intConf(1, 13, 2, 0); // active high
+    attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, CHANGE );
 }
 
 static void testPixels(void)
@@ -63,7 +72,7 @@ static void testAccel(void)
 void loop(void)
 {
     // testPixels();
-    testAccel();
+    // testAccel();
 }
 
 #if 0

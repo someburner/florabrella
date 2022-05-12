@@ -485,3 +485,52 @@ uint8_t LIS3DH::readRegister8(uint8_t reg)
 #endif
   return value;
 }
+
+//****************************************************************************//
+//
+//  Configure interrupts 1 or 2, stop or move, threshold and duration
+//	Durationsteps and maximum values depend on the ODR chosen.
+//
+//****************************************************************************//
+// moveType 0 = stop
+// moveType 1 = move
+void LIS3DH::intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity)
+{
+    uint8_t dataToWrite = 0;  //Temporary variable
+
+    uint8_t regToWrite = 0;
+    regToWrite = LIS3DH_REG_INT1CFG;
+
+    //Build INT_CFG 0x30 or 0x34
+    //Detect movement or stop
+    if(moveType == 1)	dataToWrite |= 0x0A;
+    else 							dataToWrite |= 0x05;
+
+    // _DEBBUG ("LIS3DH_INT_CFG: 0x", dataToWrite);
+    writeRegister8(regToWrite, dataToWrite);
+
+    //Build INT_THS 0x32 or 0x36
+    regToWrite += 2;
+    writeRegister8(regToWrite, threshold);
+
+    //Build INT_DURATION 0x33 or 0x37
+    regToWrite++;
+
+    writeRegister8(regToWrite, timeDur);
+
+    dataToWrite = 0 | (polarity << 1);
+
+    //Attach configuration to Interrupt X
+    // if(interrupt == 1)
+    if(true)
+    {
+      writeRegister8(LIS3DH_REG_CTRL3, 0x40);
+    }
+    else
+    {
+      // dataToWrite |= 0x20;
+    }
+
+    writeRegister8(LIS3DH_REG_CTRL6, dataToWrite);
+
+}
