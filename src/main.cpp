@@ -13,7 +13,6 @@ CRGB leds_onboard[NUM_LEDS_ONBOARD];
 #define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
-
 LIS3DH accel;
 
 void accel_isr()
@@ -40,7 +39,7 @@ void setup(void)
 
     // void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
     accel.intConf(1, 13, 10, 0); // active high
-    attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, RISING );
+    // attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, RISING );
 }
 
 static void testPixels(void)
@@ -51,7 +50,7 @@ static void testPixels(void)
     // send the 'leds' array out to the actual LED strip
     FastLED.show();
     // insert a delay to keep the framerate modest
-    FastLED.delay(1000/FRAMES_PER_SECOND);
+    // FastLED.delay(1000/FRAMES_PER_SECOND);
 
     // do some periodic updates
     EVERY_N_MILLISECONDS( 50 ) { gHue++; } // slowly cycle the "base color" through the rainbow
@@ -71,7 +70,7 @@ static void testAccel(void)
 
 void loop(void)
 {
-    // testPixels();
+    testPixels();
     // testAccel();
 }
 
