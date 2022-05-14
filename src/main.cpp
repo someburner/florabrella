@@ -1,18 +1,13 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
-#include "FastLED.h"
+#include <Adafruit_NeoPixel_ZeroDMA.h>
 #include "LIS3DH.h"
 
-#define DATA_PIN_ONBOARD    CPLAY_NEOPIXELPIN
-#define LED_TYPE_ONBOARD    WS2812B
-#define COLOR_ORDER_ONBOARD RGB
-#define NUM_LEDS_ONBOARD    CPLAY_NUMPIXELS
 #define DEFAULT_BRIGHTNESS_ONBOARD 32
-CRGB leds_onboard[NUM_LEDS_ONBOARD];
-
 #define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
+Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, CPLAY_NEOPIXELPIN, NEO_GRB);
 LIS3DH accel;
 
 void accel_isr()
@@ -24,10 +19,6 @@ void setup(void)
 {
     Serial.begin(115200);
     Serial.println("hello");
-
-    FastLED.addLeds<LED_TYPE_ONBOARD,DATA_PIN_ONBOARD,COLOR_ORDER_ONBOARD>(leds_onboard, NUM_LEDS_ONBOARD).setCorrection(TypicalLEDStrip);
-    FastLED.clear(true);
-    FastLED.setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
 
     Serial.print("LIS3DH init: ");
     accel = LIS3DH(&Wire1); // i2c on wire1
@@ -42,19 +33,32 @@ void setup(void)
     // attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, RISING );
 }
 
-static void testPixels(void)
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos)
 {
-    // Serial.println("testPixels");
-    fill_rainbow(leds_onboard, NUM_LEDS_ONBOARD, gHue, 7);
+    if(WheelPos < 85) {
+        return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+    } else if(WheelPos < 170) {
+        WheelPos -= 85;
+        return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+    } else {
+        WheelPos -= 170;
+        return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+    }
+}
 
-    // send the 'leds' array out to the actual LED strip
-    FastLED.show();
-    // insert a delay to keep the framerate modest
-    // FastLED.delay(1000/FRAMES_PER_SECOND);
+void rainbow(uint8_t wait)
+{
+    uint16_t i, j;
 
-    // do some periodic updates
-    EVERY_N_MILLISECONDS( 50 ) { gHue++; } // slowly cycle the "base color" through the rainbow
-    // EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+    for(j=0; j<256; j++) {
+        for(i=0; i<strip.numPixels(); i++) {
+            strip.setPixelColor(i, Wheel((i+j) & 255));
+            }
+        strip.show();
+        delay(wait);
+    }
 }
 
 static void testAccel(void)
@@ -67,11 +71,9 @@ static void testAccel(void)
     Serial.println(accel.z_g);
 }
 
-
 void loop(void)
 {
-    testPixels();
-    // testAccel();
+    rainbow(20);
 }
 
 #if 0
