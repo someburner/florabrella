@@ -7,7 +7,8 @@
 #define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
-Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, CPLAY_NEOPIXELPIN, NEO_GRB);
+Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
+
 LIS3DH accel;
 
 void accel_isr()
@@ -31,6 +32,10 @@ void setup(void)
     // void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
     accel.intConf(1, 13, 10, 0); // active high
     // attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, RISING );
+
+    strip.begin();
+    strip.setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
+    strip.show();
 }
 
 // Input a value 0 to 255 to get a color value.
