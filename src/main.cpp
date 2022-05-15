@@ -401,6 +401,7 @@ void loop(void)
         case 3: mode_blink(); break;
         case 4: mode_rainbowCycle(); break;
         case 5: mode_sparkles(); break;
+        case 6: mode_paparazzi(); break;
         // rainbow(20);
     }
     strip.show();
@@ -409,7 +410,7 @@ void loop(void)
     if(now - last_switch > 10000) {
         last_switch = now;
         mode++;
-        if(mode > 5) {
+        if(mode > 6) {
             mode = 0;
         }
         Serial.print("mode: ");
