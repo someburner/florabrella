@@ -470,7 +470,7 @@ void loop(void)
             ix3 = 0;
             meteor3 = false;
             for(int i = 0; i < 19; i++ ) {
-              setPixel(19+i, 0, 0, 0);
+              setPixel((2*19)+i, 0, 0, 0);
             }
         }
     }
