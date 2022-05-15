@@ -16,6 +16,16 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 // Number of drops parallel for the raindrop animation.
 #define N_DROP 4
 
+// The controller offset is used for the spiral and lantern animation. The animation uses an offset of illuminated time for
+// the different stripes. If multiple controllers are used for one object, an offset between the controllers can be set by
+// "CONTROLLER_OFFSET". The offset is added to the stripe number (e.g. if you use 1 controller for 2 stripes, set the offset
+// to 0 for the first controller, to 2 for the second controller, to 4 for the third controller and so on).
+#define CONTROLLER_OFFSET 0
+//
+#define N_SPIRAL_PIXEL 5
+#define SPIRAL_DISTANCE 10
+#define SPIRAL_ANIMATION_LENGTH 20
+
 // Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
 Adafruit_NeoPixel led_stripe[] {
   Adafruit_NeoPixel(N_PIXEL, A2, NEO_GRB + NEO_KHZ800),
@@ -139,6 +149,11 @@ Drop drop[N_STRIPE][N_DROP];
 // Initiate the pixel buffer, in which every pixel for every stripe is stored.
 Color pixel_buffer[N_STRIPE][N_PIXEL];
 
+// Initiate the frame counter for the spiral and stroboscope effect.
+uint16_t frame_counter = 0;
+// Initiate the animation step for the spiral effect.
+uint8_t animation_counter = 0;
+
 void setup(void)
 {
     delay(2000);
@@ -171,6 +186,91 @@ void led_rain() {
   }
 }
 
+// ################# SET SPIRAL ###########################
+void set_spiral(uint16_t this_stripe, uint16_t this_point_position) {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+  if (mode == 2) {
+    // In mode 2 the spiral effect will be in rainbow colors.
+
+    // The rainbow color spectrum is obtained in 5 different sectors, each with its own RGB function to determin the
+    // right RGB values. Thus the stripe is split into 5 sectors.
+    int stripe_sector = this_point_position * 5 / N_PIXEL;
+    // Calculate where within one sector the point lies.
+    int sector_position = (this_point_position + 1) % (N_PIXEL / 6);
+
+    switch (stripe_sector) {
+      case 0:
+        red = 255;
+        green = sector_position * 255 / N_PIXEL * 5;
+        blue = 0;
+        break;
+      case 1:
+        red = 255 - sector_position * 200 / N_PIXEL;
+        green = 255;
+        blue = 0;
+        break;
+      case 2:
+        red = 0;
+        green = 255;
+        blue = sector_position * 200 / N_PIXEL * 5;
+        break;
+      case 3:
+        red = 0;
+        green = 255 - sector_position * 200 / N_PIXEL;
+        blue = 255;
+      case 4:
+        red = sector_position * 200 / N_PIXEL * 5;
+        green = 0;
+        blue = 255;
+        break;
+      //case 5:
+      //  red = 255;
+      //  green = 0;
+      //  blue = 255;
+      //  break;
+      default:
+        red = 0xff;
+        green = 0xff;
+        blue = 0xff;
+    }
+  }
+  else {
+    // If the current mode is not 2, the spiral will be given out in the color red.
+    red = 0xff;
+    green = 0x00;
+    blue = 0x00;
+  }
+  // Set the spiral animation as a drop with varrying length
+  set_drop(pixel_buffer[this_stripe], this_point_position, 3 -
+    cos((animation_counter % SPIRAL_ANIMATION_LENGTH) * 2 * PI / SPIRAL_ANIMATION_LENGTH) * 2, {red, green , blue});
+}
+
+// ################# LED SPIRAL ###########################
+void led_spiral() {
+  for (uint16_t i_stripe = 0; i_stripe < N_STRIPE; i_stripe++) {
+    // The bouncy effect of the spiral is realized by only showing it 1/4 of the time with an offset between stripes
+    // and, if used and set up, different controllers.
+    if (!((frame_counter + i_stripe + CONTROLLER_OFFSET) % 4)) {
+      // Set up the spiral effect points to occur with an offset defined by "SPIRAL_DISTANCE" on one stripe. Each point
+      // will expand to the top and collapse again.
+      for (uint16_t i_point = 0; i_point < N_PIXEL / SPIRAL_DISTANCE; i_point++) {
+        // The effect of a downwards spiral is realized by adding the frame counter to the start pixel of the effect.
+        set_spiral(i_stripe, (frame_counter + i_point * SPIRAL_DISTANCE) % N_PIXEL);
+      }
+    }
+  }
+  // Update the animation step.
+  animation_counter++;
+  // If end of animation is reached, the frame counter is updated.
+  if (!(animation_counter % (SPIRAL_ANIMATION_LENGTH - 1))) {
+    frame_counter++;
+    // Reset the animation counter for a new animation.
+    animation_counter = 0;
+  }
+}
+
 // ################# SET PIXEL BUFFER ########################### (CHECKED)
 void set_pixel_buffer(Color* pixel_buffer, uint16_t this_stripe) {
   for (uint16_t i_pixel = 0; i_pixel < N_PIXEL; i_pixel++) {
@@ -191,6 +291,7 @@ void set_pixel_buffer(Color* pixel_buffer, uint16_t this_stripe) {
 void loop(void)
 {
     led_rain();
+    // led_spiral();
 
     // Update the LED pixel buffer.
     for (uint16_t i_stripe = 0; i_stripe < N_STRIPE; i_stripe++) {
@@ -201,6 +302,8 @@ void loop(void)
     for (uint16_t i_stripe = 0; i_stripe < N_STRIPE; i_stripe++) {
       led_stripe[i_stripe].show();
     }
+
+    delay(10);
 }
 
 // ################# SET DROP ########################### (CHECKED)
