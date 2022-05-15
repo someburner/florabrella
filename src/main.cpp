@@ -315,38 +315,37 @@ void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTra
 // #define BRANCHES      8
 // #define BRANCH_PIXELS 19
 
+uint8_t multi_states[2] = { 0, 0 };
+
 void meteorRainMulti(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {
-  setAll(0,0,0);
+    // setAll(0,0,0);
 
-  // for(int br = 0; br < BRANCHES; br++) {
-      for(int i = 0; i < BRANCH_PIXELS+BRANCH_PIXELS; i++) {
-
+    // for(int br = 0; br < BRANCHES; br++) {
+    for(int i = 0; i < BRANCH_PIXELS+BRANCH_PIXELS; i++) {
 
         // fade brightness all LEDs one step
         for(int j=0; j<BRANCH_PIXELS; j++) {
-          if( (!meteorRandomDecay) || (random(10)>5) ) {
-              fadeToBlack(j, meteorTrailDecay );
-              fadeToBlack(j+19, meteorTrailDecay );
-            // fadeToBlack((br*19)+j, meteorTrailDecay );
-          }
+            if( (!meteorRandomDecay) || (random(10)>5) ) {
+                fadeToBlack(j, meteorTrailDecay );
+                fadeToBlack(j+19, meteorTrailDecay );
+            }
         }
 
         // draw meteor
         for(int j = 0; j < meteorSize; j++) {
-          if( ( i-j <BRANCH_PIXELS) && (i-j>=0) ) {
-              setPixel(i-j, red, green, blue);
-              setPixel((i-j)+19, red, green, blue);
-            // setPixel( br * (i-j), red, green, blue);
-          }
+            if( ( i-j <BRANCH_PIXELS) && (i-j>=0) ) {
+                setPixel(i-j, red, green, blue);
+                setPixel((i-j)+19, red, green, blue);
+            }
         }
 
         showStrip();
         delay(SpeedDelay);
-      }
-  // }
+    }
+    // }
 
-  // showStrip();
-  // delay(SpeedDelay);
+    // showStrip();
+    // delay(SpeedDelay);
 }
 
 void TwinkleRandom(int Count, int SpeedDelay, boolean OnlyOne) {
@@ -395,6 +394,7 @@ void loop(void)
 
     // works good looks good
     // meteorRain(0xff,0xff,0xff,10, 64, true, 30);
+    setAll(0,0,0);
     meteorRainMulti(0xff,0xff,0xff,10, 64, true, 30);
 
     // works good looks meh
