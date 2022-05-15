@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
-#include <Adafruit_NeoPixel_ZeroDMA.h>
+// #include <Adafruit_NeoPixel_ZeroDMA.h>
+#include <Adafruit_NeoPixel.h>
+
 #include "LIS3DH.h"
 
 #define DEFAULT_BRIGHTNESS_ONBOARD 32
@@ -15,8 +17,8 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 #define N_DROP 4
 
 // Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
-Adafruit_NeoPixel_ZeroDMA led_stripe[] {
-  Adafruit_NeoPixel_ZeroDMA(N_PIXEL, A2, NEO_GRB + NEO_KHZ800),
+Adafruit_NeoPixel led_stripe[] {
+  Adafruit_NeoPixel(N_PIXEL, A2, NEO_GRB + NEO_KHZ800),
   // Adafruit_NeoPixel(N_PIXEL, 5, NEO_GRB + NEO_KHZ800),
   // Adafruit_NeoPixel(N_PIXEL, 8, NEO_GRB + NEO_KHZ800),
 };
