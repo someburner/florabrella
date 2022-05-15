@@ -11,6 +11,9 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
 // Adafruit_NeoPixel strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
 
+#define BRANCHES      8
+#define BRANCH_PIXELS 19
+
 LIS3DH accel;
 
 void accel_isr()
@@ -309,6 +312,43 @@ void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTra
   }
 }
 
+// #define BRANCHES      8
+// #define BRANCH_PIXELS 19
+
+void meteorRainMulti(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {
+  setAll(0,0,0);
+
+  // for(int br = 0; br < BRANCHES; br++) {
+      for(int i = 0; i < BRANCH_PIXELS+BRANCH_PIXELS; i++) {
+
+
+        // fade brightness all LEDs one step
+        for(int j=0; j<BRANCH_PIXELS; j++) {
+          if( (!meteorRandomDecay) || (random(10)>5) ) {
+              fadeToBlack(j, meteorTrailDecay );
+              fadeToBlack(j+19, meteorTrailDecay );
+            // fadeToBlack((br*19)+j, meteorTrailDecay );
+          }
+        }
+
+        // draw meteor
+        for(int j = 0; j < meteorSize; j++) {
+          if( ( i-j <BRANCH_PIXELS) && (i-j>=0) ) {
+              setPixel(i-j, red, green, blue);
+              setPixel((i-j)+19, red, green, blue);
+            // setPixel( br * (i-j), red, green, blue);
+          }
+        }
+
+        showStrip();
+        delay(SpeedDelay);
+      }
+  // }
+
+  // showStrip();
+  // delay(SpeedDelay);
+}
+
 void TwinkleRandom(int Count, int SpeedDelay, boolean OnlyOne) {
   setAll(0,0,0);
 
@@ -354,7 +394,8 @@ void loop(void)
     // delay(10);
 
     // works good looks good
-    meteorRain(0xff,0xff,0xff,10, 64, true, 30);
+    // meteorRain(0xff,0xff,0xff,10, 64, true, 30);
+    meteorRainMulti(0xff,0xff,0xff,10, 64, true, 30);
 
     // works good looks meh
     // TwinkleRandom(20, 100, false);
