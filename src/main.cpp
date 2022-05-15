@@ -1,146 +1,327 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
 #include "FastLED.h"
-#include "LIS3DH.h"
 
-#define DATA_PIN_ONBOARD    CPLAY_NEOPIXELPIN
-#define LED_TYPE_ONBOARD    WS2812B
-#define COLOR_ORDER_ONBOARD RGB
-#define NUM_LEDS_ONBOARD    CPLAY_NUMPIXELS
-#define DEFAULT_BRIGHTNESS_ONBOARD 32
-CRGB leds_onboard[NUM_LEDS_ONBOARD];
+// LED related
+#define LED_PIN     A2
+#define NUM_COLUMNS 8
+#define NUM_ROWS    18
+#define NUM_LEDS    NUM_COLUMNS * NUM_ROWS
+#define BRIGHTNESS  32
+#define LED_TYPE    WS2812B
+#define COLOR_ORDER GRB
+#define NUMBER_OF_ANIMATIONS 8
 
-#define FRAMES_PER_SECOND  120
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+CRGB leds[NUM_LEDS];
 
+// Led numbers arranged in a matrix. Notice first column has reversed order, and all
+// other columns increment downwards.
+int matrix[NUM_ROWS][NUM_COLUMNS] = {
+    {17,18,36,54,72,90,108,126},
+    {16,19,37,55,73,91,109,127},
+    {15,20,38,56,74,92,110,128},
+    {14,21,39,57,75,93,111,129},
+    {13,22,40,58,76,94,112,130},
+    {12,23,41,59,77,95,113,131},
+    {11,24,42,60,78,96,114,132},
+    {10,25,43,61,79,97,115,133},
+    {9,26,44,62,80,98,116,134},
+    {8,27,45,63,81,99,117,135},
+    {7,28,46,64,82,100,118,136},
+    {6,29,47,65,83,101,119,137},
+    {5,30,48,66,84,102,120,138},
+    {4,31,49,67,85,103,121,139},
+    {3,32,50,68,86,104,122,140},
+    {2,33,51,69,87,105,123,141},
+    {1,34,52,70,88,106,124,142},
+    {0,35,53,71,89,107,125,143}
+};
 
-LIS3DH accel;
+#define UPDATES_PER_SECOND 100
 
-void accel_isr()
-{
-    Serial.println("isr!");
-}
+CRGBPalette16 currentPalette;
+TBlendType    currentBlending;
+int currentPaletteIndex = 0;
+int currentAnimationIndex = 0;
+
+// Gradient palette "bhw4_063_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw4/tn/bhw4_063.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 76 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( bhw4_063_gp ) {
+      0,   8,  3,  1,
+     20,  50, 17,  1,
+     35,  19, 13,  5,
+     48, 242,115,  9,
+     61, 252,184, 17,
+     76, 252,114,  9,
+     89,  75, 24,  7,
+     99, 252,195, 14,
+    117,  75, 24,  7,
+    130, 210, 77,  6,
+    140, 103, 33,  3,
+    153,  10,  9,  9,
+    168, 252,213, 21,
+    186,  18,  6,  1,
+    196,  50, 17,  1,
+    209,   6,  4,  2,
+    224,  91, 87, 72,
+    242,  17,  9,  3,
+    255,   4,  1, 12}
+;
+
+extern CRGBPalette16 bhw4_063_p = bhw4_063_gp;
+
+// Gradient palette "bhw2_50_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw2/tn/bhw2_50.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 20 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( bhw2_50_gp ) {
+      0,   8,  2, 23,
+     84,  47,  7,102,
+    138,  16, 46,147,
+    173,   2,127,203,
+    255,   1,  7, 11
+};
+
+extern CRGBPalette16 bhw2_50_p = bhw2_50_gp;
+
+// Gradient palette "bhw4_062_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw4/tn/bhw4_062.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 44 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( bhw4_062_gp ) {
+       0,   4,  1, 12,
+      15,  10,  2, 25,
+      35,  28, 16,138,
+      63, 210,108,205,
+     107,  47, 18, 74,
+     137, 229,244,255,
+     153, 165,118,228,
+     178,  83, 53,174,
+     209,   8,  2, 42,
+     242,   1,  1, 12,
+     255,   1,  1, 12
+};
+
+extern CRGBPalette16 bhw4_062_p = bhw4_062_gp;
 
 void setup(void)
 {
+    delay( 3000 ); // power-up safety delay
+
     Serial.begin(115200);
     Serial.println("hello");
 
-    FastLED.addLeds<LED_TYPE_ONBOARD,DATA_PIN_ONBOARD,COLOR_ORDER_ONBOARD>(leds_onboard, NUM_LEDS_ONBOARD).setCorrection(TypicalLEDStrip);
-    FastLED.clear(true);
-    FastLED.setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
-
-    Serial.print("LIS3DH init: ");
-    accel = LIS3DH(&Wire1); // i2c on wire1
-    if(accel.begin(CPLAY_LIS3DH_ADDRESS)) {
-        Serial.println("success");
-    } else {
-        Serial.println("fail");
-    }
-
-    // void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
-    accel.intConf(1, 13, 2, 0); // active high
-    attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, CHANGE );
+    FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+    FastLED.setBrightness(BRIGHTNESS);
+    currentPalette = RainbowStripeColors_p;
+    currentBlending = NOBLEND;
 }
 
-static void testPixels(void)
-{
-    // Serial.println("testPixels");
-    fill_rainbow(leds_onboard, NUM_LEDS_ONBOARD, gHue, 7);
-
-    // send the 'leds' array out to the actual LED strip
-    FastLED.show();
-    // insert a delay to keep the framerate modest
-    FastLED.delay(1000/FRAMES_PER_SECOND);
-
-    // do some periodic updates
-    EVERY_N_MILLISECONDS( 50 ) { gHue++; } // slowly cycle the "base color" through the rainbow
-    // EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
-}
-
-static void testAccel(void)
-{
-    accel.read();
-    Serial.print(accel.x_g);
-    Serial.print(',');
-    Serial.print(accel.y_g);
-    Serial.print(',');
-    Serial.println(accel.z_g);
-}
-
+void topToBottomScrollAnimation( uint8_t colorIndex);
+void topToBottomScrollAnimation2( uint8_t colorIndex);
+void topToBottomScrollAnimation3( uint8_t colorIndex);
+void topToBottomScrollAnimation4( uint8_t colorIndex);
+void topToBottomScrollAnimation5( uint8_t colorIndex);
+void circularScrollAnimation( uint8_t colorIndex);
+void runningClusterAnimation (uint8_t colorIndex);
+void pulsatingColorsAnimation();
 
 void loop(void)
 {
-    // testPixels();
-    // testAccel();
+    static uint8_t startIndex = 0;
+
+    // Motion speed
+    startIndex = startIndex - 1;
+
+    switch(currentAnimationIndex) {
+      case 0:
+        topToBottomScrollAnimation5(startIndex);
+        break;
+      case 1:
+        circularScrollAnimation(startIndex);
+        break;
+      case 2:
+        topToBottomScrollAnimation2(startIndex);
+        break;
+      case 3:
+        pulsatingColorsAnimation();
+        break;
+      case 4:
+        topToBottomScrollAnimation(startIndex);
+        break;
+      case 5:
+        topToBottomScrollAnimation3(startIndex);
+        break;
+      case 6:
+        topToBottomScrollAnimation4(startIndex);
+        break;
+      case 7:
+        runningClusterAnimation(startIndex);
+        break;
+    }
+
+    FastLED.show();
+    // FastLED.delay(1000 / UPDATES_PER_SECOND);
+
+    EVERY_N_SECONDS(5) {
+        currentAnimationIndex++;
+        if(currentAnimationIndex > 7) currentAnimationIndex = 0;
+        Serial.print("currentAnimationIndex = ");
+        Serial.println(currentAnimationIndex);
+    }
 }
 
-#if 0
+void topToBottomScrollAnimation( uint8_t colorIndex) {
+    currentPalette = RainbowStripeColors_p;
+    uint8_t brightness = 255;
 
-// TODO: implement light sense with FastLED
-
-// read the onboard lightsensor
-// returns value between 0 and 1023 read from the light sensor
-// NOTE: 1000 Lux will roughly read as 2 Volts (or about 680 as a raw analog
-// reading). A reading of about 300 is common for most indoor light levels.
-// Note that outdoor daylight is 10,000 Lux or even higher, so this sensor is
-// best suited for indoor light levels!
-static uint16_t lightSensor(void)
-{
-    return analogRead(CPLAY_LIGHTSENSOR);
+    for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+      for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+      }
+      colorIndex += 3;
+    }
 }
 
-// Configuration to tune the color sensing logic: Amount of time (in millis) to
-// wait between changing the pixel color and reading the light sensor.
-#define LIGHT_SETTLE_MS 100
+void topToBottomScrollAnimation2( uint8_t colorIndex) {
+    currentPalette = PartyColors_p;
+    uint8_t brightness = 255;
 
-static void senseColor(uint8_t &red, uint8_t &green, uint8_t &blue)
-{
-    // Save the current pixel brightness so it can later be restored.  Then bump
-    // the brightness to max to make sure the LED is as bright as possible for
-    // the color readings.
-    uint8_t old_brightness = strip.getBrightness();
-    strip.setBrightness(255);
-    // Set pixel 1 (next to the light sensor) to full red, green, blue
-    // color and grab a light sensor reading.  Make sure to wait a bit
-    // after changing pixel colors to let the light sensor change
-    // resistance!
-    setPixelColor(1, 255, 0, 0); // Red
-    delay(LIGHT_SETTLE_MS);
-    uint16_t raw_red = lightSensor();
-    setPixelColor(1, 0, 255, 0); // Green
-    delay(LIGHT_SETTLE_MS);
-    uint16_t raw_green = lightSensor();
-    setPixelColor(1, 0, 0, 255); // Blue
-    delay(LIGHT_SETTLE_MS);
-    uint16_t raw_blue = lightSensor();
-    // Turn off the pixel and restore brightness, we're done with readings.
-    setPixelColor(1, 0);
-    strip.setBrightness(old_brightness);
-    // Now scale down each of the raw readings to be within
-    // 0 to 255.  Remember each sensor reading is from the ADC
-    // which has 10 bits of resolution (0 to 1023), so dividing
-    // by 4 will change the range from 0-1023 to 0-255.  Also
-    // use the min function to clamp the value to 255 at most (just
-    // to prevent overflow from 255.xx to 0).
-    red = min(255, raw_red / 4);
-    green = min(255, raw_green / 4);
-    blue = min(255, raw_blue / 4);
+    for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+      for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+      }
+      colorIndex += 6;
+    }
 }
 
-// perform a color sense
-static void testLightSense(void)
-{
-    // turn off all the pixels to make sure they don't interfere with reading
-    clearPixels();
-    // Now take a color reading
-    uint8_t red, green, blue;
-    senseColor(red, green, blue);
-    Serial.print("Color: red=");
-    Serial.print(red, DEC);
-    Serial.print(" green=");
-    Serial.print(green, DEC);
-    Serial.print(" blue=");
-    Serial.println(blue, DEC);
+void topToBottomScrollAnimation3( uint8_t colorIndex) {
+    currentPalette = bhw4_063_p;
+    uint8_t brightness = 255;
+
+    for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+      for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+      }
+      colorIndex += 3;
+    }
 }
-#endif
+
+void topToBottomScrollAnimation4( uint8_t colorIndex) {
+    currentPalette = bhw2_50_p;
+    uint8_t brightness = 255;
+
+    for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+      for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+      }
+      colorIndex += 3;
+    }
+}
+
+void topToBottomScrollAnimation5( uint8_t colorIndex) {
+    currentPalette = bhw4_062_p;
+    uint8_t brightness = 255;
+
+    for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+      for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+      }
+      colorIndex += 3;
+    }
+}
+
+void circularScrollAnimation( uint8_t colorIndex) {
+    currentPalette = PartyColors_p;
+    uint8_t brightness = 255;
+
+    for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+      for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+      }
+      colorIndex += 3;
+    }
+}
+
+void runningClusterAnimation (uint8_t colorIndex) {
+  uint8_t brightness = 255;
+  static uint8_t currentClusterCol = 0;
+  static uint8_t currentClusterRow = 0;
+  currentPalette = RainbowColors_p;
+  static uint8_t skipCount = 0;
+
+  for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) {
+    for ( int row_index = 0; row_index < (NUM_ROWS - 8); row_index++) {
+
+      if (column_index == currentClusterCol && row_index == currentClusterRow) {
+        // Add colors to 3 pixels in a row. The leading and trailing pixel should be faded.
+
+        // Main col
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+        // Next col
+        if (column_index >= NUM_COLUMNS) {  // On last column
+          leds[matrix[row_index][0]] = ColorFromPalette( currentPalette, colorIndex, brightness / 2, currentBlending);
+        } else {
+          leds[matrix[row_index][column_index + 1]] = ColorFromPalette( currentPalette, colorIndex, brightness / 2, currentBlending);
+        }
+        // Prev col
+        if (column_index == 0) { // On first column
+          leds[matrix[row_index][NUM_COLUMNS - 2]] = ColorFromPalette( currentPalette, colorIndex, brightness / 2, currentBlending);
+        } else {
+          leds[matrix[row_index][column_index - 1]] = ColorFromPalette( currentPalette, colorIndex, brightness / 2, currentBlending);
+        }
+      } else {
+        leds[matrix[row_index][column_index]] = CRGB::Black;
+      }
+    }
+  }
+
+  // Regulate traversing speed
+  if (skipCount < 5) {
+    skipCount = skipCount + 1;
+    return;
+  } else {
+    skipCount = 0;
+  }
+
+  if (currentClusterRow >= (NUM_ROWS - 8) - 1) {
+    currentClusterRow = 0;
+  } else if (currentClusterCol >= NUM_COLUMNS - 1) {
+    // On last column, switch to next row.
+    currentClusterRow = currentClusterRow + 1;
+  }
+
+  if (currentClusterCol >= NUM_COLUMNS - 1) {
+    // Last column
+    currentClusterCol = 0;
+  } else {
+    currentClusterCol = currentClusterCol + 1;
+  }
+}
+
+void pulsatingColorsAnimation () {
+  currentPalette = PartyColors_p;
+  static uint8_t brightnessDirection = 0;  // Incrementing
+  static uint8_t brightness = 100;
+  static uint8_t stepSize = 1;
+  static uint8_t pulsatingColorIndex = 0;
+
+  for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+    for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+      leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, pulsatingColorIndex, brightness, currentBlending);
+    }
+  }
+
+  if (brightness >= 250 && brightnessDirection == 0) {
+    brightnessDirection = 1;
+  } else if (brightness <= 25 && brightnessDirection == 1) {
+    brightnessDirection = 0;
+    pulsatingColorIndex = pulsatingColorIndex + 20;
+  }
+  brightness = brightnessDirection == 0 ? brightness + stepSize : brightness - stepSize;
+}
