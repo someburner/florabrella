@@ -1,15 +1,15 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
-// #include <Adafruit_NeoPixel_ZeroDMA.h>
-#include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoPixel_ZeroDMA.h>
+// #include <Adafruit_NeoPixel.h>
 #include "LIS3DH.h"
 
 #define DEFAULT_BRIGHTNESS_ONBOARD 32
 #define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
-// Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
-Adafruit_NeoPixel strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
+Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
+// Adafruit_NeoPixel strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
 
 LIS3DH accel;
 
@@ -40,7 +40,7 @@ void setup(void)
     strip.show();
 }
 
-#define NUM_LEDS 19
+#define NUM_LEDS 19*8
 
 
 // ***************************************
@@ -209,6 +209,32 @@ byte * Wheel2(byte WheelPos) {
   return c;
 }
 
+// used by meteorrain
+void fadeToBlack(int ledNo, byte fadeValue) {
+ #ifdef ADAFRUIT_NEOPIXEL_H
+    // NeoPixel
+    uint32_t oldColor;
+    uint8_t r, g, b;
+    int value;
+
+    oldColor = strip.getPixelColor(ledNo);
+    r = (oldColor & 0x00ff0000UL) >> 16;
+    g = (oldColor & 0x0000ff00UL) >> 8;
+    b = (oldColor & 0x000000ffUL);
+
+    r=(r<=10)? 0 : (int) r-(r*fadeValue/256);
+    g=(g<=10)? 0 : (int) g-(g*fadeValue/256);
+    b=(b<=10)? 0 : (int) b-(b*fadeValue/256);
+
+    strip.setPixelColor(ledNo, r,g,b);
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H
+   // FastLED
+   leds[ledNo].fadeToBlackBy( fadeValue );
+ #endif
+}
+
+
 void theaterChaseRainbow(int SpeedDelay) {
   byte *c;
 
@@ -229,6 +255,88 @@ void theaterChaseRainbow(int SpeedDelay) {
   }
 }
 
+void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, int ReturnDelay){
+
+  for(int i = 0; i < NUM_LEDS-EyeSize-2; i++) {
+    setAll(0,0,0);
+    setPixel(i, red/10, green/10, blue/10);
+    for(int j = 1; j <= EyeSize; j++) {
+      setPixel(i+j, red, green, blue);
+    }
+    setPixel(i+EyeSize+1, red/10, green/10, blue/10);
+    showStrip();
+    delay(SpeedDelay);
+  }
+
+  delay(ReturnDelay);
+
+  for(int i = NUM_LEDS-EyeSize-2; i > 0; i--) {
+    setAll(0,0,0);
+    setPixel(i, red/10, green/10, blue/10);
+    for(int j = 1; j <= EyeSize; j++) {
+      setPixel(i+j, red, green, blue);
+    }
+    setPixel(i+EyeSize+1, red/10, green/10, blue/10);
+    showStrip();
+    delay(SpeedDelay);
+  }
+
+  delay(ReturnDelay);
+}
+
+void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {
+  setAll(0,0,0);
+
+  for(int i = 0; i < NUM_LEDS+NUM_LEDS; i++) {
+
+
+    // fade brightness all LEDs one step
+    for(int j=0; j<NUM_LEDS; j++) {
+      if( (!meteorRandomDecay) || (random(10)>5) ) {
+        fadeToBlack(j, meteorTrailDecay );
+      }
+    }
+
+    // draw meteor
+    for(int j = 0; j < meteorSize; j++) {
+      if( ( i-j <NUM_LEDS) && (i-j>=0) ) {
+        setPixel(i-j, red, green, blue);
+      }
+    }
+
+    showStrip();
+    delay(SpeedDelay);
+  }
+}
+
+void TwinkleRandom(int Count, int SpeedDelay, boolean OnlyOne) {
+  setAll(0,0,0);
+
+  for (int i=0; i<Count; i++) {
+     setPixel(random(NUM_LEDS),random(0,255),random(0,255),random(0,255));
+     showStrip();
+     delay(SpeedDelay);
+     if(OnlyOne) {
+       setAll(0,0,0);
+     }
+   }
+
+  delay(SpeedDelay);
+}
+
+void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
+  for(int j = 0; j < StrobeCount; j++) {
+    setAll(red,green,blue);
+    showStrip();
+    delay(FlashDelay);
+    setAll(0,0,0);
+    showStrip();
+    delay(FlashDelay);
+  }
+
+ delay(EndPause);
+}
+
 void loop(void)
 {
     // rainbow(20);
@@ -239,7 +347,22 @@ void loop(void)
     // BouncingColoredBalls(3, colors, false);
     // colorWipe(0x00,0xff,0x00, 50);
     // colorWipe(0x00,0x00,0x00, 50);
-    theaterChaseRainbow(50);
+    // theaterChaseRainbow(50);
+
+    // works ok - looks okish
+    // CylonBounce(0xff, 0x00, 0x00, 4, 10, 50);
+    // delay(10);
+
+    // works good looks good
+    meteorRain(0xff,0xff,0xff,10, 64, true, 30);
+
+    // works good looks meh
+    // TwinkleRandom(20, 100, false);
+
+
+    // works good- could be cool to do super randomly but is kinda intense
+    // Strobe - Color (red, green, blue), number of flashes, flash speed, end pause
+    // Strobe(0xff, 0xff, 0xff, 10, 50, 1000);
 }
 
 #if 0
