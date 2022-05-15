@@ -7,78 +7,246 @@
 #define FRAMES_PER_SECOND  120
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
-Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
+// Number of pixel on each stripe.
+#define N_PIXEL 19*8
+// Number of stripes controlled by one controller.
+#define N_STRIPE 1
+// Number of drops parallel for the raindrop animation.
+#define N_DROP 4
 
-LIS3DH accel;
+// Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
+Adafruit_NeoPixel_ZeroDMA led_stripe[] {
+  Adafruit_NeoPixel_ZeroDMA(N_PIXEL, A2, NEO_GRB + NEO_KHZ800),
+  // Adafruit_NeoPixel(N_PIXEL, 5, NEO_GRB + NEO_KHZ800),
+  // Adafruit_NeoPixel(N_PIXEL, 8, NEO_GRB + NEO_KHZ800),
+};
 
-void accel_isr()
-{
-    Serial.println("isr!");
-}
+
+
+class Color {
+  public:
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
+// Declare function here while it is used in the class "Drop".
+void set_drop(Color* pixel_buffer, int drop_position, uint8_t drop_length, Color color);
+
+// Inititate the mode while it is needed by the class "Drop".
+uint8_t mode = 0;
+
+class Drop {
+  public:
+    uint8_t position;
+    uint8_t length;
+    Color color;
+    uint16_t delay;
+    uint16_t delay_counter;
+    Color *pixel_buffer;
+
+    Drop()
+      : position(0)
+      , length(0)
+      , color( {
+      0xFF, 0xFF, 0xFF
+    })
+    , delay(0)
+    , delay_counter(0)
+    , pixel_buffer(0)
+    {}
+
+    Drop(Color *pb) {
+      // Hand this drop a pointer for the pixel buffer of the stripe the drop is on.
+      pixel_buffer = pb;
+      random_init();
+    }
+
+    void random_init() {
+      delay_counter = random(0, 15);
+      delay = random(1, 3);
+      length = random(2, 5);
+      position = 0;
+      if (mode == 0) {
+        // If the mode is 0 the raindrops will be in colors.
+        uint8_t switch_color = random(0, 7);
+        switch (switch_color) {
+          case 1:
+            color.r = 200;
+            color.g = 0;
+            color.b = 0;
+            break;
+          case 2:
+            color.r = 200;
+            color.g = 200;
+            color.b = 0;
+            break;
+          case 3:
+            color.r = 200;
+            color.g = 0;
+            color.b = 200;
+            break;
+          case 4:
+            color.r = 0;
+            color.g = 200;
+            color.b = 0;
+            break;
+          case 5:
+            color.r = 0;
+            color.g = 200;
+            color.b = 200;
+            break;
+          case 6:
+            color.r = 0;
+            color.g = 0;
+            color.b = 200;
+            break;
+        }
+      }
+      else {
+        // If the mode is not 0 (mode 1) the raindrops will be white.
+        color.r = 200;
+        color.g = 200;
+        color.b = 200;
+      }
+    }
+
+
+
+    void update_drop() {
+      // If the delay counter is on, reduce it by one, otherwise update the drop position.
+      if (delay_counter != 0) {
+        delay_counter--;
+        return;
+      }
+      position++;
+      delay_counter = delay;
+      // Initiate the drop again if it not on the LED stripe anymore
+      if (position > N_PIXEL + length) {
+        random_init();
+      }
+    }
+
+    void paint() {
+      set_drop(pixel_buffer, position, length, color);
+    }
+};
+
+// Initiate an array for the drops for every stripe.
+Drop drop[N_STRIPE][N_DROP];
+// Initiate the pixel buffer, in which every pixel for every stripe is stored.
+Color pixel_buffer[N_STRIPE][N_PIXEL];
 
 void setup(void)
 {
+    delay(2000);
+
     Serial.begin(115200);
     Serial.println("hello");
 
-    Serial.print("LIS3DH init: ");
-    accel = LIS3DH(&Wire1); // i2c on wire1
-    if(accel.begin(CPLAY_LIS3DH_ADDRESS)) {
-        Serial.println("success");
-    } else {
-        Serial.println("fail");
-    }
+    // strip.begin();
+    // strip.setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
+    // strip.show();
 
-    // void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
-    accel.intConf(1, 13, 10, 0); // active high
-    // attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, RISING );
-
-    strip.begin();
-    strip.setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
-    strip.show();
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos)
-{
-    if(WheelPos < 85) {
-        return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-    } else if(WheelPos < 170) {
-        WheelPos -= 85;
-        return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-    } else {
-        WheelPos -= 170;
-        return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+    for (uint16_t i_stripe = 0; i_stripe < N_STRIPE; i_stripe++) {
+        led_stripe[i_stripe].begin();
+        led_stripe[i_stripe].setBrightness(DEFAULT_BRIGHTNESS_ONBOARD);
+        // Initiate the drops for this stripe.
+        for (uint16_t i_drop = 0; i_drop < N_DROP; i_drop++) {
+            drop[i_stripe][i_drop] = Drop((Color*)&pixel_buffer[i_stripe]);
+        }
     }
 }
 
-void rainbow(uint8_t wait)
-{
-    uint16_t i, j;
 
-    for(j=0; j<256; j++) {
-        for(i=0; i<strip.numPixels(); i++) {
-            strip.setPixelColor(i, Wheel((i+j) & 255));
-            }
-        strip.show();
-        delay(wait);
+// ################# LED RAIN ########################### (CHECKED)
+void led_rain() {
+  for (uint16_t i_stripe = 0; i_stripe < N_STRIPE; i_stripe++) {
+    for (uint16_t i_drop = 0; i_drop < N_DROP; i_drop++) {
+      drop[i_stripe][i_drop].paint();
+      drop[i_stripe][i_drop].update_drop();
     }
+  }
 }
 
-static void testAccel(void)
-{
-    accel.read();
-    Serial.print(accel.x_g);
-    Serial.print(',');
-    Serial.print(accel.y_g);
-    Serial.print(',');
-    Serial.println(accel.z_g);
+// ################# SET PIXEL BUFFER ########################### (CHECKED)
+void set_pixel_buffer(Color* pixel_buffer, uint16_t this_stripe) {
+  for (uint16_t i_pixel = 0; i_pixel < N_PIXEL; i_pixel++) {
+    // Prevent the pixel ilumination value to exceed the max 255.
+    pixel_buffer[i_pixel].r = min(pixel_buffer[i_pixel].r, 255);
+    pixel_buffer[i_pixel].g = min(pixel_buffer[i_pixel].g, 255);
+    pixel_buffer[i_pixel].b = min(pixel_buffer[i_pixel].b, 255);
+    // Set the pixel on this stripe.
+    led_stripe[this_stripe].setPixelColor(i_pixel, led_stripe[this_stripe].Color(pixel_buffer[i_pixel].r,
+      pixel_buffer[i_pixel].g, pixel_buffer[i_pixel].b));
+    // After the pixel has been set the buffer is set back to zero.
+    pixel_buffer[i_pixel].r = 0;
+    pixel_buffer[i_pixel].g = 0;
+    pixel_buffer[i_pixel].b = 0;
+  }
 }
 
 void loop(void)
 {
-    rainbow(20);
+    led_rain();
+
+    // Update the LED pixel buffer.
+    for (uint16_t i_stripe = 0; i_stripe < N_STRIPE; i_stripe++) {
+      set_pixel_buffer(pixel_buffer[i_stripe], i_stripe);
+    }
+
+    // Write the pixel buffer to the LEDs.
+    for (uint16_t i_stripe = 0; i_stripe < N_STRIPE; i_stripe++) {
+      led_stripe[i_stripe].show();
+    }
+}
+
+// ################# SET DROP ########################### (CHECKED)
+void set_drop(Color* pixel_buffer, int drop_position, uint8_t drop_length, Color color) {
+  // Here a drop is set. The drop effect is realized by reducing the brightness from the lowest pixel on to the top.
+  // Special cases for when the drop exceeds the LED stripe to the top or bottom have to be consindered.
+
+  // First, the visible part on the stripe is defined.
+  // The top pixel of the drop that can be seen (If all are seen, this is 0)
+  uint8_t dropindex_top;
+  // The bottom pixel of the drop that can be seen (If all are seen, this is the drop length)
+  uint8_t dropindex_bot;
+  if (drop_position < drop_length) {
+    // Case: The drop exceeds the LED stripe at the top, thus only the visible pixels at the drop bottom have to be shown.
+    dropindex_top = 0;
+    dropindex_bot = drop_position;
+  }
+  else if (drop_position > N_PIXEL) {
+    // Case: The drop exceeds the LED stripe at the bottom, thus only the upper drop pixels are visible.
+    dropindex_top = drop_position - N_PIXEL;
+    dropindex_bot = drop_length;
+  }
+  else {
+    // Case: The whole drop can be displayed.
+    dropindex_top = 0;
+    dropindex_bot = drop_length;
+  }
+  // Go through every drop pixel and adjust the brightness. The bottom pixel will have full brightness.
+  for (uint16_t i_droppixel = dropindex_top; i_droppixel < dropindex_bot; i_droppixel++) {
+    float brightness_multiplier = 0;
+    // If bottom pixel set to full brightness.
+    if (i_droppixel == 0) {
+      brightness_multiplier = 1;
+    }
+    // If not the bottom pixel lower brightness, the more up the pixel the lower the brightness.
+    else {
+      brightness_multiplier = 0.8 / sq(i_droppixel) / drop_length;
+    }
+
+    uint8_t R_adjust = color.r * brightness_multiplier;
+    uint8_t G_adjust = color.g * brightness_multiplier;
+    uint8_t B_adjust = color.b * brightness_multiplier;
+    // Update the pixel buffer.
+    pixel_buffer[drop_position - i_droppixel - 1].r += R_adjust;
+    pixel_buffer[drop_position - i_droppixel - 1].g += G_adjust;
+    pixel_buffer[drop_position - i_droppixel - 1].b += B_adjust;
+  }
+  // strip.show();
 }
 
 #if 0
