@@ -315,33 +315,44 @@ void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTra
 // #define BRANCHES      8
 // #define BRANCH_PIXELS 19
 
-uint8_t multi_states[2] = { 0, 0 };
+uint8_t multi_states[2] = { 1, 0 };
 
-void meteorRainMulti(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {
+void meteorRainMulti(int i, byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {
     // setAll(0,0,0);
+    if(i < 0) return;
 
     // for(int br = 0; br < BRANCHES; br++) {
-    for(int i = 0; i < BRANCH_PIXELS+BRANCH_PIXELS; i++) {
+    // for(int i = 0; i < BRANCH_PIXELS+BRANCH_PIXELS; i++) {
 
         // fade brightness all LEDs one step
         for(int j=0; j<BRANCH_PIXELS; j++) {
-            if( (!meteorRandomDecay) || (random(10)>5) ) {
-                fadeToBlack(j, meteorTrailDecay );
-                fadeToBlack(j+19, meteorTrailDecay );
+            if(multi_states[0]) {
+                if( (!meteorRandomDecay) || (random(10)>5) ) {
+                    fadeToBlack(j, meteorTrailDecay );
+                }
+            }
+            if(multi_states[1]) {
+                if( (!meteorRandomDecay) || (random(10)>5) ) {
+                    fadeToBlack(j+19, meteorTrailDecay );
+                }
             }
         }
 
         // draw meteor
         for(int j = 0; j < meteorSize; j++) {
             if( ( i-j <BRANCH_PIXELS) && (i-j>=0) ) {
-                setPixel(i-j, red, green, blue);
-                setPixel((i-j)+19, red, green, blue);
+                if(multi_states[0]) {
+                    setPixel(i-j, red, green, blue);
+                }
+                if(multi_states[1]) {
+                    setPixel(2*i-j, red, green, blue);
+                }
             }
         }
 
-        showStrip();
-        delay(SpeedDelay);
-    }
+        // showStrip();
+        // delay(SpeedDelay);
+    // }
     // }
 
     // showStrip();
@@ -394,8 +405,51 @@ void loop(void)
 
     // works good looks good
     // meteorRain(0xff,0xff,0xff,10, 64, true, 30);
-    setAll(0,0,0);
-    meteorRainMulti(0xff,0xff,0xff,10, 64, true, 30);
+
+    static bool reset = true;
+    if(reset) {
+        setAll(0,0,0);
+        reset = false;
+    }
+
+    static uint32_t nextMeteor;
+    static uint32_t lastUpdate = millis();
+    static uint32_t lastUpdate2 = millis();
+    uint32_t now = millis();
+
+    nextMeteor = lastUpdate + 3750;
+
+    // for(int i = 0; i < BRANCH_PIXELS+BRANCH_PIXELS; i++) {
+    static int ix = 0;
+    if(now - lastUpdate > 30) {
+        lastUpdate = now;
+        meteorRainMulti(ix, 0xff,0xff,0xff,10, 64, true, 30);
+        ix++;
+        if(ix > BRANCH_PIXELS+BRANCH_PIXELS) {
+            ix = 0;
+        }
+    }
+
+
+    if((now > 3512) && (now - nextMeteor > 0)) {
+        multi_states[1] = 1;
+        lastUpdate2 = now;
+    }
+
+    static int ix2 = -3;
+    if((now > 3512) && (now - lastUpdate2 > 30)) {
+        lastUpdate2 = now;
+        meteorRainMulti(ix2, 0xff,0xff,0xff,10, 64, true, 30);
+        ix2++;
+        if(ix2 > BRANCH_PIXELS+BRANCH_PIXELS) {
+            ix2 = 0;
+        }
+    }
+    showStrip();
+
+
+
+    // meteorRainMulti(0xff,0xff,0xff,10, 64, true, 30);
 
     // works good looks meh
     // TwinkleRandom(20, 100, false);
