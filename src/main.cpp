@@ -181,6 +181,23 @@ static void testAccel(void)
     Serial.println(accel.z_g);
 }
 
+// rainbow always on, top to bottom
+void topToBottomScrollAnimation2( uint8_t colorIndex) {
+    currentPalette = PartyColors_p;
+    uint8_t brightness = 255;
+
+    for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...17
+      for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+        leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
+        int i = matrix[row_index][column_index];
+        strip.setPixelColor(i, strip.Color(leds[i].r, leds[i].g, leds[i].b));
+      }
+      strip.show();
+      colorIndex += 6;
+    }
+}
+
+// hue top to bottom
 void topToBottomScrollAnimation4( uint8_t colorIndex) {
     currentPalette = bhw2_50_p;
     uint8_t brightness = 255;
@@ -196,6 +213,7 @@ void topToBottomScrollAnimation4( uint8_t colorIndex) {
     }
 }
 
+// hue top to bottom, always on (brightness changes)
 void topToBottomScrollAnimation5( uint8_t colorIndex) {
     currentPalette = bhw4_062_p;
     uint8_t brightness = 255;
@@ -211,6 +229,7 @@ void topToBottomScrollAnimation5( uint8_t colorIndex) {
     }
 }
 
+// pulse colors in/out
 void pulsatingColorsAnimation () {
   currentPalette = PartyColors_p;
   static uint8_t brightnessDirection = 0;  // Incrementing
@@ -240,17 +259,21 @@ void loop(void)
     // Motion speed
     startIndex = startIndex - 1;
 
-    // topToBottomScrollAnimation4(startIndex);
-    topToBottomScrollAnimation5(startIndex);
-    // pulsatingColorsAnimation();
+    topToBottomScrollAnimation2(startIndex); // rainbow always on, top to bottom
+    // topToBottomScrollAnimation4(startIndex); // hue top to bottom
+    // topToBottomScrollAnimation5(startIndex); // hue top to bottom, always on (brightness changes)
 
-    // for(int i = 0; i < NUM_LEDS; i++ ) {
+#if 0
+    pulsatingColorsAnimation(); // pulse colors in/out
+    for(int i = 0; i < NUM_LEDS; i++ ) {
         // strip.setPixelColor(i, leds[i].r, leds[i].g, leds[i].b);
-        // strip.setPixelColor(i, strip.Color(leds[i].r, leds[i].g, leds[i].b));
+        strip.setPixelColor(i, strip.Color(leds[i].r, leds[i].g, leds[i].b));
         // delay(1);
-    // }
+    }
+    strip.show();
+    delay(1);
+#endif
 
-    // strip.show();
     // delay(2);
     // FastLED.show();
     // FastLED.delay(1000 / UPDATES_PER_SECOND);
