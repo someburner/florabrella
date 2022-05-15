@@ -18,6 +18,8 @@ void accel_isr()
 
 void setup(void)
 {
+    delay(2000);
+
     Serial.begin(115200);
     Serial.println("hello");
 
