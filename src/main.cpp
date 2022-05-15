@@ -2,6 +2,8 @@
 #include "CPlayExpress.h"
 #include "FastLED.h"
 
+// All code from https://github.com/kiwiholmberg/led-umbrella-core
+
 // LED related
 #define LED_PIN     A2
 #define NUM_COLUMNS 8
