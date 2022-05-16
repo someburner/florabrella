@@ -50,12 +50,21 @@ uint8_t paletteIndex = 0;
 
 void loop(void)
 {
+    // color_chase(CRGB::White, 200);
+
+#if 0
     // fill_palette(leds, NUM_LEDS, paletteIndex, 255 / NUM_LEDS, myPal, 255, LINEARBLEND);
     fill_palette(leds, NUM_LEDS, paletteIndex, 2, myPal, 255, LINEARBLEND);
     FastLED.show();
     EVERY_N_MILLISECONDS(10) {
         paletteIndex++;
     }
+#endif
 
-    // color_chase(CRGB::White, 200);
+#if 1
+    uint8_t sinBeat = beatsin8(30, 0, NUM_LEDS-1, 0, 0);
+    leds[sinBeat] = CRGB::Blue;
+    fadeToBlackBy(leds, NUM_LEDS, 10);
+    FastLED.show();
+#endif
 }
