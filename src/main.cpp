@@ -4,10 +4,19 @@
 
 #define DATA_PIN    A2
 #define LED_TYPE    WS2812B
-#define COLOR_ORDER RGB
-#define NUM_LEDS    19
+#define COLOR_ORDER GRB
+#define NUM_LEDS    19*8
 #define DEFAULT_BRIGHTNESS 32
 CRGB leds[NUM_LEDS];
+
+DEFINE_GRADIENT_PALETTE(heatmap_gp) {
+    0,     0,   0,   0, // black
+    128, 255,   0,   0, // red
+    200, 255, 255,   0, // bright yellow
+    255, 255, 255, 255  // full white
+};
+
+CRGBPalette16 myPal = heatmap_gp;
 
 void setup(void)
 {
@@ -37,8 +46,16 @@ void color_chase(uint32_t color, uint8_t wait)
   return;
 }
 
+uint8_t paletteIndex = 0;
 
 void loop(void)
 {
-    color_chase(CRGB::White, 200);
+    // fill_palette(leds, NUM_LEDS, paletteIndex, 255 / NUM_LEDS, myPal, 255, LINEARBLEND);
+    fill_palette(leds, NUM_LEDS, paletteIndex, 2, myPal, 255, LINEARBLEND);
+    FastLED.show();
+    EVERY_N_MILLISECONDS(10) {
+        paletteIndex++;
+    }
+
+    // color_chase(CRGB::White, 200);
 }
