@@ -35,6 +35,31 @@ DEFINE_GRADIENT_PALETTE(browngreen_gp) {
 };
 CRGBPalette16 orangePink = browngreen_gp;
 
+// ***************************************
+// ** FastLed/NeoPixel Common Functions **
+// ***************************************
+
+// Apply LED color changes
+void showStrip() {
+    // FastLED
+    FastLED.show();
+}
+
+// Set a LED color (not yet visible)
+void setPixel(int Pixel, byte red, byte green, byte blue) {
+   leds[Pixel].r = red;
+   leds[Pixel].g = green;
+   leds[Pixel].b = blue;
+}
+
+// Set all LEDs to a given color and apply it (visible)
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < NUM_LEDS; i++ ) {
+    setPixel(i, red, green, blue);
+  }
+  showStrip();
+}
+
 void setup(void)
 {
     delay(2000);
@@ -70,9 +95,45 @@ void color_chase(uint32_t color, uint8_t wait)
 
 uint8_t paletteIndex = 0;
 
+#define BRANCHES      8
+#define BRANCH_PIXELS 19
+
+// CRGB leds[NUM_LEDS];
+
+void meteorRainMulti(int i, byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {
+    // fade brightness all LEDs one step
+    for(int j=0; j<BRANCH_PIXELS; j++) {
+        if( (!meteorRandomDecay) || (random(10)>5) ) {
+            leds[j].fadeToBlackBy( meteorTrailDecay );
+        }
+    }
+
+    // draw meteor
+    for(int j = 0; j < meteorSize; j++) {
+        if( ( i-j <BRANCH_PIXELS) && (i-j>=0) ) {
+            setPixel(i-j, red, green, blue);
+        }
+    }
+}
+
 void loop(void)
 {
     // color_chase(CRGB::White, 200);
+
+    static int ix0 = 0;
+    static int nextUpdate = 30;
+
+    EVERY_N_MILLISECONDS(nextUpdate) {
+        nextUpdate = 30;
+        meteorRainMulti(ix0, 0xff,0xff,0xff,10, 64, true, 30);
+        ix0++;
+        if(ix0 > BRANCH_PIXELS+BRANCH_PIXELS) {
+            ix0 = 0;
+            nextUpdate = 3000;
+        }
+    }
+
+    FastLED.show();
 
 #if 0
     // fill_palette(leds, NUM_LEDS, paletteIndex, 255 / NUM_LEDS, myPal, 255, LINEARBLEND);
@@ -108,7 +169,7 @@ void loop(void)
     FastLED.show();
 #endif
 
-#if 1
+#if 0
     uint8_t beatA = beatsin8(30, 0, 255);
     uint8_t beatB = beatsin8(20, 0, 255);
     // fill_palette(leds, NUM_LEDS, (beatA+beatB)/2, 10, orangePink, 255, LINEARBLEND);
