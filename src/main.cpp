@@ -8,6 +8,7 @@
 #define NUM_LEDS    19*8
 #define DEFAULT_BRIGHTNESS 32
 CRGB leds[NUM_LEDS];
+uint8_t colorIndex[NUM_LEDS];
 
 DEFINE_GRADIENT_PALETTE(heatmap_gp) {
     0,     0,   0,   0, // black
@@ -15,8 +16,24 @@ DEFINE_GRADIENT_PALETTE(heatmap_gp) {
     200, 255, 255,   0, // bright yellow
     255, 255, 255, 255  // full white
 };
-
 CRGBPalette16 myPal = heatmap_gp;
+
+DEFINE_GRADIENT_PALETTE(greenblue_gp) {
+      0,   0, 255, 245,
+     46,   0,  21, 255,
+    179,  12, 250,   0,
+    255,   0, 255, 245
+};
+CRGBPalette16 greenblue = greenblue_gp;
+
+DEFINE_GRADIENT_PALETTE(browngreen_gp) {
+      0,   6, 255,   0, // green
+     71,   0, 255, 153, // bluegreen
+    122, 200, 200, 200, // gray
+    181, 110,  61,   6, // brown
+    255,   6, 255,   0  // green
+};
+CRGBPalette16 orangePink = browngreen_gp;
 
 void setup(void)
 {
@@ -28,6 +45,11 @@ void setup(void)
     FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.clear(true);
     FastLED.setBrightness(DEFAULT_BRIGHTNESS);
+
+    // fill colorIndex array with random numbers
+    for(int i = 0; i < NUM_LEDS; i++) {
+        colorIndex[i] = random8();
+    }
 }
 
 /// Move a single led
@@ -61,10 +83,37 @@ void loop(void)
     }
 #endif
 
-#if 1
+#if 0
+    // create a sin wave at 30bmp for all LEDS, no time base or phase shift
     uint8_t sinBeat = beatsin8(30, 0, NUM_LEDS-1, 0, 0);
     leds[sinBeat] = CRGB::Blue;
     fadeToBlackBy(leds, NUM_LEDS, 10);
     FastLED.show();
 #endif
+
+#if 0
+    // create a sin wave with period of 2 seconds (30bmp) to change brightness
+    // limit lowest brightness
+    uint8_t sinBeat = beatsin8(30, DEFAULT_BRIGHTNESS, 255, 0, 0);
+
+    for(int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = ColorFromPalette(greenblue, colorIndex[i], sinBeat);
+    }
+
+    EVERY_N_MILLISECONDS(5) {
+        for(int i = 0; i < NUM_LEDS; i++) {
+            colorIndex[i]++;
+        }
+    }
+    FastLED.show();
+#endif
+
+#if 1
+    uint8_t beatA = beatsin8(30, 0, 255);
+    uint8_t beatB = beatsin8(20, 0, 255);
+    // fill_palette(leds, NUM_LEDS, (beatA+beatB)/2, 10, orangePink, 255, LINEARBLEND);
+    fill_rainbow(leds, NUM_LEDS, (beatA+beatB)/2, 8);
+    FastLED.show();
+#endif
+
 }
