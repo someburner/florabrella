@@ -5,7 +5,7 @@
 #define DATA_PIN    A2
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER GRB
-#define NUM_LEDS    19*8
+#define NUM_LEDS    19*2
 #define DEFAULT_BRIGHTNESS 32
 CRGB leds[NUM_LEDS];
 uint8_t colorIndex[NUM_LEDS];
@@ -116,20 +116,63 @@ void meteorRainMulti(int i, byte red, byte green, byte blue, byte meteorSize, by
     }
 }
 
+void meteorRainMulti2(int i, byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {
+    // fade brightness all LEDs one step
+    for(int j=0; j<BRANCH_PIXELS; j++) {
+        if( (!meteorRandomDecay) || (random(10)>5) ) {
+            leds[j+19].fadeToBlackBy( meteorTrailDecay );
+        }
+    }
+
+    // draw meteor
+    for(int j = 0; j < meteorSize; j++) {
+        if( ( i-j <BRANCH_PIXELS) && (i-j>=0) ) {
+            setPixel(i-j+19, red, green, blue);
+        }
+    }
+}
+
 void loop(void)
 {
     // color_chase(CRGB::White, 200);
 
     static int ix0 = 0;
+    static int ix1 = 0;
     static int nextUpdate = 30;
+    static int nextUpdate2 = 3700;
+    uint32_t now = millis();
+    static bool running = false;
+    static bool running2 = false;
 
-    EVERY_N_MILLISECONDS(nextUpdate) {
-        nextUpdate = 30;
-        meteorRainMulti(ix0, 0xff,0xff,0xff,10, 64, true, 30);
-        ix0++;
-        if(ix0 > BRANCH_PIXELS+BRANCH_PIXELS) {
-            ix0 = 0;
-            nextUpdate = 3000;
+    if(!running && now > nextUpdate) {
+        running = true;
+    }
+
+    EVERY_N_MILLISECONDS(30) {
+        if(running) {
+            meteorRainMulti(ix0, 0xff,0xff,0xff,10, 64, true, 30);
+            ix0++;
+            if(ix0 > 3*BRANCH_PIXELS) {
+                ix0 = 0;
+                running = false;
+                nextUpdate = now + 3000;
+            }
+        }
+    }
+
+    if(!running2 && now > nextUpdate2) {
+        running2 = true;
+    }
+
+    EVERY_N_MILLISECONDS(30) {
+        if(running2) {
+            meteorRainMulti2(ix1, 0xff,0xff,0xff,10, 64, true, 30);
+            ix1++;
+            if(ix1 > 3*BRANCH_PIXELS) {
+                ix1 = 0;
+                running2 = false;
+                nextUpdate2 = now + 1720;
+            }
         }
     }
 
