@@ -62,7 +62,7 @@ int matrix[NUM_ROWS][NUM_COLUMNS] = {
 
 void setup(void)
 {
-    delay(2000);
+    delay(500);
 
     Serial.begin(115200);
     Serial.println("hello");
@@ -163,10 +163,34 @@ void ping_pong(void)
     FastLED.show();
 }
 
+void edge_loop(void)
+{
+    static int pxi = 0;
+    static uint8_t hue = 0; // rotating "base color"
+    EVERY_N_MILLISECONDS(20) {
+        pxi++;
+        if(pxi == 2*19 - 1) pxi = 0;
+        // Serial.println(pxi);
+    }
+    leds[edge1[pxi]] = CRGB::Green;
+    leds[edge2[pxi]] = CRGB::Blue;
+    leds[edge3[pxi]] = CRGB::Red;
+    leds[edge4[pxi]] = CRGB::Purple;
+
+    EVERY_N_MILLISECONDS(5) {
+        fadeToBlackBy(leds, NUM_LEDS, 10);
+        hue++;
+    }
+
+    delayMicroseconds(100);
+    FastLED.show();
+}
+
 void loop(void)
 {
     // drop_down_fade();
-    ping_pong();
+    // ping_pong();
+    edge_loop();
 
 
 
