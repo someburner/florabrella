@@ -211,6 +211,10 @@ void edge_rotate(void)
         prev_edge = edge_num;
         hue += 16;
     }
+
+    EVERY_N_MILLISECONDS(10) {
+        fadeToBlackBy(leds, NUM_LEDS, 10);
+    }
     delayMicroseconds(100);
     FastLED.show();
 }
