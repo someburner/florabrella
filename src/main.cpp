@@ -172,10 +172,19 @@ void edge_loop(void)
         if(pxi == 2*19 - 1) pxi = 0;
         // Serial.println(pxi);
     }
+#if 0 // static colors
     leds[edge1[pxi]] = CRGB::Green;
     leds[edge2[pxi]] = CRGB::Blue;
     leds[edge3[pxi]] = CRGB::Red;
     leds[edge4[pxi]] = CRGB::Purple;
+#endif
+
+#if 1 // rainbow comet
+    leds[edge1[pxi]] = CHSV( hue+0, 255, 192);
+    leds[edge2[pxi]] = CHSV( hue+64, 255, 192);
+    leds[edge3[pxi]] = CHSV( hue+128, 255, 192);
+    leds[edge4[pxi]] = CHSV( hue+192, 255, 192);
+#endif
 
     EVERY_N_MILLISECONDS(5) {
         fadeToBlackBy(leds, NUM_LEDS, 10);
