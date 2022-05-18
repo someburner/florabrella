@@ -13,6 +13,7 @@
 #include "PingPong.h"
 #include "GradientTest.h"
 #include "TopBottom.h"
+#include "MeteorRain.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -102,6 +103,13 @@ void run_topbottomanims(void)
     while(isRunning) tb.run();
 }
 
+void run_meteorrain(void)
+{
+    isRunning = true;
+    MeteorRain mr = MeteorRain();
+    while(isRunning) mr.run();
+}
+
 void loop(void)
 {
     // run_dropdownfade();
@@ -110,5 +118,6 @@ void loop(void)
     // run_edgerotate();
     // run_gradienttest();
     // run_bloom();
-    run_topbottomanims();
+    // run_topbottomanims();
+    run_meteorrain();
 }
