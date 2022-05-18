@@ -19,7 +19,7 @@ class Meteor {
     void SetChangeHue(bool changeHue) {
         _changeHue = changeHue;
     }
-    void draw(CRGB color, uint8_t meteorSize, uint8_t meteorTrailDecay, bool meteorRandomDecay, int SpeedDelay);
+    void draw(CRGB color, uint8_t meteorSize, uint8_t meteorTrailDecay, bool meteorRandomDecay);
     void poll(uint32_t now, uint8_t index);
     bool running = true;
 
@@ -31,7 +31,7 @@ class Meteor {
     int rainIndex = 0;
 };
 
-void Meteor::draw(CRGB color, uint8_t meteorSize, uint8_t meteorTrailDecay, bool meteorRandomDecay, int SpeedDelay)
+void Meteor::draw(CRGB color, uint8_t meteorSize, uint8_t meteorTrailDecay, bool meteorRandomDecay)
 {
     // fade brightness all LEDs one step
     for(int j = 0; j < BRANCH_LEN; j++) {
@@ -48,7 +48,7 @@ void Meteor::draw(CRGB color, uint8_t meteorSize, uint8_t meteorTrailDecay, bool
     rainIndex++;
     if(rainIndex > 3*BRANCH_LEN) {
         running = false;
-        nextMeteor = millis() + random16(0, 3096);
+        nextMeteor = millis() + random16(0, 2048);
         for(int i = 0; i < 19; i++ ) {
             leds[i+_indexShift] = CRGB::Black;
         }
@@ -61,9 +61,9 @@ void Meteor::poll(uint32_t now, uint8_t index)
         if(_changeHue) {
             uint8_t colorIndex = index;
             CRGB c = CHSV(colorIndex, 255, 192);
-            draw(c, 10, 64, true, 30);
+            draw(c, 10, 64, true);
         } else {
-            draw(_defaultColor, 10, 64, true, 30);
+            draw(_defaultColor, 10, 64, true);
         }
     } else if (now > nextMeteor) {
         running = true;
