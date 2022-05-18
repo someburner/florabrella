@@ -1,8 +1,10 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
+#include "LEDconfig.h"
 #include "FastLED.h"
 #include "gradients.h"
 #include "LUT.h"
+#include "Bloom.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -10,11 +12,6 @@
 #include <Adafruit_NeoPixel_ZeroDMA.h>
 #endif
 
-#define DATA_PIN    A2
-#define LED_TYPE    WS2812B
-#define COLOR_ORDER GRB
-#define NUM_LEDS    19*8
-#define DEFAULT_BRIGHTNESS 64
 CRGB leds[NUM_LEDS];
 uint8_t colorIndex[NUM_LEDS];
 
@@ -173,58 +170,13 @@ void gradient_test()
     FastLED.show();
 }
 
-CRGB hue_helper(int pos, int length, int step, int bstep)
+bool isRunning = false;
+
+void run_bloom(void)
 {
-    CHSV hsv( ((pos*255/length) + step) % 255, 255, bstep );
-    CRGB rgb;
-    hsv2rgb_rainbow(hsv, rgb);  //convert HSV to RGB
-    return rgb;
-}
-
-void bloom_test(void)
-{
-    static int step = 1;
-    static int bstep = 64;
-    // branch len == ring count
-    for(int i = 0; i < BRANCH_LEN; i++) {
-        CRGB rgb = hue_helper(i, BRANCH_LEN*2, step, bstep);
-        // fill_ring
-        for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
-            leds[matrix[i][branch]] = rgb;
-        }
-    }
-
-    static bool bstepDir = true;
-    EVERY_N_MILLISECONDS(50) {
-        step += 3;
-        if(step >= 255) {
-            step = 0;
-        }
-    }
-
-    EVERY_N_MILLISECONDS(20) {
-        if(bstepDir) {
-            bstep += 3;
-        } else {
-            bstep -= 3;
-        }
-        if(bstep >= 224) {
-            bstepDir = false;
-        }
-        if(bstep < 64) {
-            bstepDir = true;
-        }
-    }
-
-#ifdef USE_NEOPIXEL_DMA
-    for(int i=0; i<strip.numPixels(); i++) {
-        strip.setPixelColor(i, leds[i].r,  leds[i].g, leds[i].b);
-    }
-    strip.show();
-#else
-    delayMicroseconds(10);
-    FastLED.show();
-#endif
+    isRunning = true;
+    Bloom bloom = Bloom();
+    while(isRunning) bloom.run();
 }
 
 void loop(void)
@@ -234,8 +186,7 @@ void loop(void)
     // edge_loop();
     // edge_rotate();
     // gradient_test();
-    bloom_test();
-
+    run_bloom();
 
     // color_chase(CRGB::White, 200);
 
