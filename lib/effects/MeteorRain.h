@@ -95,6 +95,8 @@ class MeteorRain {
     uint8_t startIndex = 0; // hue change
 };
 
+#include "Strobe.h"
+
 void MeteorRain::run(void)
 {
     uint32_t now = millis();
@@ -103,6 +105,14 @@ void MeteorRain::run(void)
         for(uint8_t i = 0; i < BRANCHES; i++) {
             meteors[i].poll(now, startIndex);
         }
+    }
+
+    // TODO: make optional
+    EVERY_N_MILLISECONDS(10000) {
+        uint8_t flashes = random8(0, 3);
+        uint8_t flashDelay = 50;
+        Strobe s = Strobe(CRGB::White, flashes, flashDelay);
+        s.run();
     }
 
     // hue change

@@ -14,6 +14,7 @@
 #include "GradientTest.h"
 #include "TopBottom.h"
 #include "MeteorRain.h"
+#include "Strobe.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -112,6 +113,15 @@ void run_meteorrain(void)
     while(isRunning) mr.run();
 }
 
+void run_strobe(void)
+{
+    isRunning = true;
+    Strobe s = Strobe(CRGB::White, 10, 50);
+    while(isRunning) s.run();
+}
+
+// Strobe(0xff, 0xff, 0xff, 10, 50, 1000);
+
 void loop(void)
 {
     // run_dropdownfade();
@@ -122,4 +132,5 @@ void loop(void)
     // run_bloom();
     // run_topbottomanims();
     run_meteorrain();
+    // run_strobe();
 }
