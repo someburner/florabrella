@@ -1,6 +1,8 @@
 #ifndef DROPDOWNFADE_EFFECT_H
 #define DROPDOWNFADE_EFFECT_H
 
+// Pixel dropping down on all branches and slowly fading
+
 #include "Arduino.h"
 extern CRGB leds[NUM_LEDS];
 

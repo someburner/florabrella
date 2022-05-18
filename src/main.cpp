@@ -9,6 +9,7 @@
 #include "Bloom.h"
 #include "DropDownFade.h"
 #include "EdgeRotate.h"
+#include "EdgeLoop.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -91,43 +92,6 @@ void ping_pong(void)
     FastLED.show();
 }
 
-void edge_loop(void)
-{
-    static int pxi = 0;
-    static uint8_t hue = 0; // rotating "base color"
-    EVERY_N_MILLISECONDS(20) {
-        pxi++;
-        if(pxi == 2*19 - 1) pxi = 0;
-        // Serial.println(pxi);
-    }
-#if 0 // static colors
-    leds[edge1[pxi]] = CRGB::Green;
-    leds[edge2[pxi]] = CRGB::Blue;
-    leds[edge3[pxi]] = CRGB::Red;
-    leds[edge4[pxi]] = CRGB::Purple;
-#endif
-
-#if 1 // rainbow comet
-    leds[edge1[pxi]] = CHSV( hue+0, 255, 192);
-    leds[edge2[pxi]] = CHSV( hue+64, 255, 192);
-    leds[edge3[pxi]] = CHSV( hue+128, 255, 192);
-    leds[edge4[pxi]] = CHSV( hue+192, 255, 192);
-#endif
-
-    EVERY_N_MILLISECONDS(5) {
-        fadeToBlackBy(leds, NUM_LEDS, 10);
-        hue++;
-    }
-
-    delayMicroseconds(100);
-    FastLED.show();
-}
-
-void edge_rotate(void)
-{
-
-}
-
 void gradient_test()
 {
     uint8_t beatA = beatsin8(120, 0, 255);
@@ -138,6 +102,7 @@ void gradient_test()
 
 bool isRunning = false;
 
+// cool
 void run_bloom(void)
 {
     isRunning = true;
@@ -145,6 +110,7 @@ void run_bloom(void)
     while(isRunning) bloom.run();
 }
 
+// nice but needs improvement
 void run_dropdownfade(void)
 {
     isRunning = true;
@@ -152,6 +118,7 @@ void run_dropdownfade(void)
     while(isRunning) ddf.run();
 }
 
+// a bit hard on the eyes but demos it
 void run_edgerotate(void)
 {
     isRunning = true;
@@ -159,12 +126,20 @@ void run_edgerotate(void)
     while(isRunning) er.run();
 }
 
+// kinda cool but needs variation
+void run_edgeloop(void)
+{
+    isRunning = true;
+    EdgeLoop el = EdgeLoop();
+    while(isRunning) el.run();
+}
+
 void loop(void)
 {
     // run_dropdownfade();
     // ping_pong();
-    // edge_loop();
-    run_edgerotate();
+    run_edgeloop();
+    // run_edgerotate();
     // gradient_test();
     // run_bloom();
 

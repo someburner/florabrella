@@ -1,6 +1,8 @@
 #ifndef BLOOM_EFFECT_H
 #define BLOOM_EFFECT_H
 
+// Rainbow hue that fades in and out going up branches
+
 #include "Arduino.h"
 #include "mycolorutils.h"
 extern CRGB leds[NUM_LEDS];

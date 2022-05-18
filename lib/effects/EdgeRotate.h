@@ -1,6 +1,8 @@
 #ifndef EDGEROTATE_EFFECT_H
 #define EDGEROTATE_EFFECT_H
 
+// rotate changing hues around and fade out
+
 #include "Arduino.h"
 extern CRGB leds[NUM_LEDS];
 
