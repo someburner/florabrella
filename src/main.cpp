@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
 #include "FastLED.h"
+#include "gradients.h"
 
 #define DATA_PIN    A2
 #define LED_TYPE    WS2812B
@@ -9,31 +10,6 @@
 #define DEFAULT_BRIGHTNESS 64
 CRGB leds[NUM_LEDS];
 uint8_t colorIndex[NUM_LEDS];
-
-DEFINE_GRADIENT_PALETTE(heatmap_gp) {
-    0,     0,   0,   0, // black
-    128, 255,   0,   0, // red
-    200, 255, 255,   0, // bright yellow
-    255, 255, 255, 255  // full white
-};
-CRGBPalette16 myPal = heatmap_gp;
-
-DEFINE_GRADIENT_PALETTE(greenblue_gp) {
-      0,   0, 255, 245,
-     46,   0,  21, 255,
-    179,  12, 250,   0,
-    255,   0, 255, 245
-};
-CRGBPalette16 greenblue = greenblue_gp;
-
-DEFINE_GRADIENT_PALETTE(browngreen_gp) {
-      0,   6, 255,   0, // green
-     71,   0, 255, 153, // bluegreen
-    122, 200, 200, 200, // gray
-    181, 110,  61,   6, // brown
-    255,   6, 255,   0  // green
-};
-CRGBPalette16 orangePink = browngreen_gp;
 
 #define NUM_COLUMNS 8
 #define NUM_ROWS    19
@@ -94,7 +70,6 @@ void color_chase(uint32_t color, uint8_t wait)
 }
 
 uint8_t paletteIndex = 0;
-
 
 void drop_down_fade(void)
 {
@@ -219,12 +194,21 @@ void edge_rotate(void)
     FastLED.show();
 }
 
+void gradient_test()
+{
+    uint8_t beatA = beatsin8(120, 0, 255);
+    uint8_t beatB = beatsin8(80, 0, 255);
+    fill_palette(leds, NUM_LEDS, (beatA+beatB)/2, 10, brownGreen, 128, LINEARBLEND);
+    FastLED.show();
+}
+
 void loop(void)
 {
     // drop_down_fade();
     // ping_pong();
     // edge_loop();
-    edge_rotate();
+    // edge_rotate();
+    gradient_test();
 
 
     // color_chase(CRGB::White, 200);
