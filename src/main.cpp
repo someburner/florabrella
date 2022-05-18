@@ -8,6 +8,7 @@
 // Effects
 #include "Bloom.h"
 #include "DropDownFade.h"
+#include "EdgeRotate.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -124,26 +125,7 @@ void edge_loop(void)
 
 void edge_rotate(void)
 {
-    CRGB::Green;
-    static uint8_t edge_num = 0;
-    static uint8_t prev_edge = 7;
-    static uint8_t hue = 0; // rotating "base color"
 
-    EVERY_N_MILLISECONDS(100) {
-        edge_num = (edge_num + 1) % 8;
-        for(int i = 0; i < BRANCH_LEN; i++) {
-            leds[matrix[i][prev_edge]] = CHSV( hue+0, 255, 192);
-            leds[matrix[i][edge_num]] = CHSV( hue+32, 255, 192);
-        }
-        prev_edge = edge_num;
-        hue += 16;
-    }
-
-    EVERY_N_MILLISECONDS(10) {
-        fadeToBlackBy(leds, NUM_LEDS, 10);
-    }
-    delayMicroseconds(100);
-    FastLED.show();
 }
 
 void gradient_test()
@@ -170,12 +152,19 @@ void run_dropdownfade(void)
     while(isRunning) ddf.run();
 }
 
+void run_edgerotate(void)
+{
+    isRunning = true;
+    EdgeRotate er = EdgeRotate();
+    while(isRunning) er.run();
+}
+
 void loop(void)
 {
-    run_dropdownfade();
+    // run_dropdownfade();
     // ping_pong();
     // edge_loop();
-    // edge_rotate();
+    run_edgerotate();
     // gradient_test();
     // run_bloom();
 
