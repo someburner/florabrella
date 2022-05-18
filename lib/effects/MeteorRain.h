@@ -13,11 +13,19 @@ class Meteor {
         _indexShift = branch*19;
         nextMeteor = millis() + random16(0, 2048);
     };
+    void SetDefaultColor(CRGB color) {
+        _defaultColor = color;
+    }
+    void SetChangeHue(bool changeHue) {
+        _changeHue = changeHue;
+    }
     void draw(CRGB color, uint8_t meteorSize, uint8_t meteorTrailDecay, bool meteorRandomDecay, int SpeedDelay);
-    void poll(uint32_t now);
+    void poll(uint32_t now, uint8_t index);
     bool running = true;
 
   private:
+    CRGB _defaultColor = CRGB::White;
+    bool _changeHue = false;
     uint32_t nextMeteor = 0;
     uint8_t _indexShift = 0;
     int rainIndex = 0;
@@ -47,10 +55,16 @@ void Meteor::draw(CRGB color, uint8_t meteorSize, uint8_t meteorTrailDecay, bool
     }
 }
 
-void Meteor::poll(uint32_t now)
+void Meteor::poll(uint32_t now, uint8_t index)
 {
     if(running) {
-        draw(CRGB::White, 10, 64, true, 30);
+        if(_changeHue) {
+            uint8_t colorIndex = index;
+            CRGB c = CHSV(colorIndex, 255, 192);
+            draw(c, 10, 64, true, 30);
+        } else {
+            draw(_defaultColor, 10, 64, true, 30);
+        }
     } else if (now > nextMeteor) {
         running = true;
         rainIndex = 0;
@@ -59,16 +73,26 @@ void Meteor::poll(uint32_t now)
 
 class MeteorRain {
   public:
-    MeteorRain() {
+    MeteorRain(CRGB defaultColor = CRGB::White, bool changeHue = false) {
+        _changeHue = changeHue;
+        _defaultColor = defaultColor;
+        initBranches();
+    };
+    void initBranches(void) {
         for(uint8_t i = 0; i < BRANCHES; i++) {
             meteors[i].SetBranch(i);
+            meteors[i].SetDefaultColor(_defaultColor);
+            meteors[i].SetChangeHue(_changeHue);
         }
-    };
+    }
     void run();
 
   private:
     // Meteor m0 = Meteor(0);
     Meteor meteors[8];
+    bool _changeHue = false;
+    CRGB _defaultColor = CRGB::White;
+    uint8_t startIndex = 0; // hue change
 };
 
 void MeteorRain::run(void)
@@ -77,9 +101,12 @@ void MeteorRain::run(void)
     EVERY_N_MILLISECONDS(30) {
         // m0.poll(now);
         for(uint8_t i = 0; i < BRANCHES; i++) {
-            meteors[i].poll(now);
+            meteors[i].poll(now, startIndex);
         }
     }
+
+    // hue change
+    startIndex = startIndex - 1;
 
     delayMicroseconds(100);
     FastLED.show();

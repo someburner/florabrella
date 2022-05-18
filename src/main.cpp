@@ -106,7 +106,9 @@ void run_topbottomanims(void)
 void run_meteorrain(void)
 {
     isRunning = true;
-    MeteorRain mr = MeteorRain();
+    // MeteorRain mr = MeteorRain();
+    // MeteorRain mr = MeteorRain(CRGB::Blue, false);
+    MeteorRain mr = MeteorRain(CRGB::Black, true);
     while(isRunning) mr.run();
 }
 
