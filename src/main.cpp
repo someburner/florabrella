@@ -3,6 +3,12 @@
 #include "FastLED.h"
 #include "gradients.h"
 
+// #define USE_NEOPIXEL_DMA
+
+#ifdef USE_NEOPIXEL_DMA
+#include <Adafruit_NeoPixel_ZeroDMA.h>
+#endif
+
 #define DATA_PIN    A2
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER GRB
@@ -36,6 +42,10 @@ int matrix[BRANCH_LEN][BRANCHES] = {
     {18,37,56,75,94,113,132,151}
 };
 
+#ifdef USE_NEOPIXEL_DMA
+Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
+#endif
+
 void setup(void)
 {
     delay(500);
@@ -46,6 +56,11 @@ void setup(void)
     FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.clear(true);
     FastLED.setBrightness(DEFAULT_BRIGHTNESS);
+
+#ifdef USE_NEOPIXEL_DMA
+    strip.begin();
+    strip.setBrightness(DEFAULT_BRIGHTNESS);
+#endif
 
     // fill colorIndex array with random numbers
     for(int i = 0; i < NUM_LEDS; i++) {
@@ -202,13 +217,68 @@ void gradient_test()
     FastLED.show();
 }
 
+CRGB hue_helper(int pos, int length, int step, int bstep)
+{
+    CHSV hsv( ((pos*255/length) + step) % 255, 255, bstep );
+    CRGB rgb;
+    hsv2rgb_rainbow(hsv, rgb);  //convert HSV to RGB
+    return rgb;
+}
+
+void bloom_test(void)
+{
+    static int step = 1;
+    static int bstep = 64;
+    // branch len == ring count
+    for(int i = 0; i < BRANCH_LEN; i++) {
+        CRGB rgb = hue_helper(i, BRANCH_LEN*2, step, bstep);
+        // fill_ring
+        for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
+            leds[matrix[i][branch]] = rgb;
+        }
+    }
+
+    static bool bstepDir = true;
+    EVERY_N_MILLISECONDS(50) {
+        step += 3;
+        if(step >= 255) {
+            step = 0;
+        }
+    }
+
+    EVERY_N_MILLISECONDS(20) {
+        if(bstepDir) {
+            bstep += 3;
+        } else {
+            bstep -= 3;
+        }
+        if(bstep >= 224) {
+            bstepDir = false;
+        }
+        if(bstep < 64) {
+            bstepDir = true;
+        }
+    }
+
+#ifdef USE_NEOPIXEL_DMA
+    for(int i=0; i<strip.numPixels(); i++) {
+        strip.setPixelColor(i, leds[i].r,  leds[i].g, leds[i].b);
+    }
+    strip.show();
+#else
+    delayMicroseconds(10);
+    FastLED.show();
+#endif
+}
+
 void loop(void)
 {
     // drop_down_fade();
     // ping_pong();
     // edge_loop();
     // edge_rotate();
-    gradient_test();
+    // gradient_test();
+    bloom_test();
 
 
     // color_chase(CRGB::White, 200);
