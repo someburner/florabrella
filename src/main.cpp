@@ -11,10 +11,10 @@
 CRGB leds[NUM_LEDS];
 uint8_t colorIndex[NUM_LEDS];
 
-#define NUM_COLUMNS 8
-#define NUM_ROWS    19
+#define NUM_BR 8
+#define BR_LEN 19
 
-int matrix[NUM_ROWS][NUM_COLUMNS] = {
+int matrix[BR_LEN][NUM_BR] = {
     {0,19,38,57,76,95,114,133},
     {1,20,39,58,77,96,115,134},
     {2,21,40,59,78,97,116,135},
@@ -80,7 +80,7 @@ void drop_down_fade(void)
             pxi = 0;
         }
     }
-    for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+    for( int column_index = 0; column_index < NUM_BR; column_index++) { // 0...7
         leds[matrix[pxi][column_index]] = CRGB::Green;
     }
     EVERY_N_MILLISECONDS(5) {
@@ -91,22 +91,22 @@ void drop_down_fade(void)
     FastLED.show();
 }
 
-int edge1[2*NUM_ROWS] = {
+int edge1[2*BR_LEN] = {
     18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0,
     76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94
 };
 
-int edge2[2*NUM_ROWS] = {
+int edge2[2*BR_LEN] = {
     37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19,
     95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113
 };
 
-int edge3[2*NUM_ROWS] = {
+int edge3[2*BR_LEN] = {
     56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38,
     114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132
 };
 
-int edge4[2*NUM_ROWS] = {
+int edge4[2*BR_LEN] = {
     75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57,
     133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151
 };
@@ -179,7 +179,7 @@ void edge_rotate(void)
 
     EVERY_N_MILLISECONDS(100) {
         edge_num = (edge_num + 1) % 8;
-        for(int i = 0; i < NUM_ROWS; i++) {
+        for(int i = 0; i < BR_LEN; i++) {
             leds[matrix[i][prev_edge]] = CHSV( hue+0, 255, 192);
             leds[matrix[i][edge_num]] = CHSV( hue+32, 255, 192);
         }
@@ -215,8 +215,8 @@ void loop(void)
 
 
 
-    // for ( int row_index = 0; row_index < NUM_ROWS; row_index++) {  // 0...18
-    //   for( int column_index = 0; column_index < NUM_COLUMNS; column_index++) { // 0...7
+    // for ( int row_index = 0; row_index < BR_LEN; row_index++) {  // 0...18
+    //   for( int column_index = 0; column_index < NUM_BR; column_index++) { // 0...7
     //     leds[matrix[row_index][column_index]] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
     //   }
     //   colorIndex += 6;
