@@ -10,6 +10,7 @@
 #include "DropDownFade.h"
 #include "EdgeRotate.h"
 #include "EdgeLoop.h"
+#include "PingPong.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -64,34 +65,6 @@ void color_chase(uint32_t color, uint8_t wait)
 
 uint8_t paletteIndex = 0;
 
-
-void ping_pong(void)
-{
-    static int pxi = 0;
-    static bool direction = true;
-    EVERY_N_MILLISECONDS(50) {
-        if(direction) {
-            pxi++;
-            if(pxi == 2*19 - 1) direction = false;
-        } else {
-            pxi--;
-            if(pxi == 0) direction = true;
-        }
-        // Serial.println(pxi);
-    }
-    leds[edge1[pxi]] = CRGB::Green;
-    leds[edge2[pxi]] = CRGB::Blue;
-    leds[edge3[pxi]] = CRGB::Red;
-    leds[edge4[pxi]] = CRGB::Purple;
-
-    EVERY_N_MILLISECONDS(10) {
-        fadeToBlackBy(leds, NUM_LEDS, 10);
-    }
-
-    delayMicroseconds(100);
-    FastLED.show();
-}
-
 void gradient_test()
 {
     uint8_t beatA = beatsin8(120, 0, 255);
@@ -134,11 +107,19 @@ void run_edgeloop(void)
     while(isRunning) el.run();
 }
 
+// also kinda cool but also needs variation
+void run_pingpong(void)
+{
+    isRunning = true;
+    PingPong pp = PingPong();
+    while(isRunning) pp.run();
+}
+
 void loop(void)
 {
     // run_dropdownfade();
-    // ping_pong();
-    run_edgeloop();
+    // run_pingpong();
+    // run_edgeloop();
     // run_edgerotate();
     // gradient_test();
     // run_bloom();
