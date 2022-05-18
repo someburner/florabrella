@@ -4,7 +4,10 @@
 #include "FastLED.h"
 #include "gradients.h"
 #include "LUT.h"
+
+// Effects
 #include "Bloom.h"
+#include "DropDownFade.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -59,25 +62,6 @@ void color_chase(uint32_t color, uint8_t wait)
 
 uint8_t paletteIndex = 0;
 
-void drop_down_fade(void)
-{
-    static int pxi = 0;
-    EVERY_N_MILLISECONDS(500) {
-        pxi++;
-        if(pxi == 19) {
-            pxi = 0;
-        }
-    }
-    for( int column_index = 0; column_index < BRANCHES; column_index++) { // 0...7
-        leds[matrix[pxi][column_index]] = CRGB::Green;
-    }
-    EVERY_N_MILLISECONDS(5) {
-        fadeToBlackBy(leds, NUM_LEDS, 10);
-    }
-
-    delayMicroseconds(100);
-    FastLED.show();
-}
 
 void ping_pong(void)
 {
@@ -179,14 +163,21 @@ void run_bloom(void)
     while(isRunning) bloom.run();
 }
 
+void run_dropdownfade(void)
+{
+    isRunning = true;
+    DropDownFade ddf = DropDownFade();
+    while(isRunning) ddf.run();
+}
+
 void loop(void)
 {
-    // drop_down_fade();
+    run_dropdownfade();
     // ping_pong();
     // edge_loop();
     // edge_rotate();
     // gradient_test();
-    run_bloom();
+    // run_bloom();
 
     // color_chase(CRGB::White, 200);
 
