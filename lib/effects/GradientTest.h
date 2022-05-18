@@ -28,7 +28,8 @@ class GradientTest {
     uint8_t colorIndex[NUM_LEDS];
 };
 
-// brown green, kinda meh but shows 2 waves
+// brown green, kinda meh but shows 2 waves, could be cool with some changes,
+// better colors maybe
 void GradientTest::beats2(void)
 {
     uint8_t beatA = beatsin8(120, 0, 255);

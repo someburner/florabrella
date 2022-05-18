@@ -98,6 +98,6 @@ void loop(void)
     // run_pingpong();
     // run_edgeloop();
     // run_edgerotate();
-    run_gradienttest();
+    // run_gradienttest();
     // run_bloom();
 }
