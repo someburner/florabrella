@@ -12,6 +12,7 @@
 #include "EdgeLoop.h"
 #include "PingPong.h"
 #include "GradientTest.h"
+#include "TopBottom.h"
 
 // #define USE_NEOPIXEL_DMA
 
@@ -29,8 +30,8 @@ void setup(void)
 {
     delay(500);
 
-    Serial.begin(115200);
-    Serial.println("hello");
+    DEBUGbegin(SERIAL_BAUD);
+    DEBUGln("hello");
 
     FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.clear(true);
@@ -92,6 +93,15 @@ void run_gradienttest(void)
     while(isRunning) gt.run();
 }
 
+// kiwiholmberg - some good ones in here
+void run_topbottomanims(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(); // all
+    // TopBottom tb = TopBottom(7); // specific
+    while(isRunning) tb.run();
+}
+
 void loop(void)
 {
     // run_dropdownfade();
@@ -100,4 +110,5 @@ void loop(void)
     // run_edgerotate();
     // run_gradienttest();
     // run_bloom();
+    run_topbottomanims();
 }

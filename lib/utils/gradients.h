@@ -37,4 +37,61 @@ DEFINE_GRADIENT_PALETTE(browngreen_gp) {
 };
 static CRGBPalette16 brownGreen = browngreen_gp;
 
+// Gradient palette "bhw4_063_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw4/tn/bhw4_063.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+DEFINE_GRADIENT_PALETTE(bhw4_063_gp) {
+      0,   8,  3,  1,
+     20,  50, 17,  1,
+     35,  19, 13,  5,
+     48, 242,115,  9,
+     61, 252,184, 17,
+     76, 252,114,  9,
+     89,  75, 24,  7,
+     99, 252,195, 14,
+    117,  75, 24,  7,
+    130, 210, 77,  6,
+    140, 103, 33,  3,
+    153,  10,  9,  9,
+    168, 252,213, 21,
+    186,  18,  6,  1,
+    196,  50, 17,  1,
+    209,   6,  4,  2,
+    224,  91, 87, 72,
+    242,  17,  9,  3,
+    255,   4,  1, 12
+};
+static CRGBPalette16 bhw4_063_p = bhw4_063_gp;
+
+// Gradient palette "bhw2_50_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw2/tn/bhw2_50.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+DEFINE_GRADIENT_PALETTE(bhw2_50_gp) {
+      0,   8,  2, 23,
+     84,  47,  7,102,
+    138,  16, 46,147,
+    173,   2,127,203,
+    255,   1,  7, 11
+};
+static CRGBPalette16 bhw2_50_p = bhw2_50_gp;
+
+// Gradient palette "bhw4_062_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw4/tn/bhw4_062.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 44 bytes of program space.
+DEFINE_GRADIENT_PALETTE(bhw4_062_gp) {
+       0,   4,  1, 12,
+      15,  10,  2, 25,
+      35,  28, 16,138,
+      63, 210,108,205,
+     107,  47, 18, 74,
+     137, 229,244,255,
+     153, 165,118,228,
+     178,  83, 53,174,
+     209,   8,  2, 42,
+     242,   1,  1, 12,
+     255,   1,  1, 12
+};
+static CRGBPalette16 bhw4_062_p = bhw4_062_gp;
+
 #endif
