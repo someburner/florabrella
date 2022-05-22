@@ -8,6 +8,7 @@
 #define CPLAY_RIGHTBUTTON 5       ///< right button pin
 #define CPLAY_SLIDESWITCHPIN 7    ///< slide switch pin
 #define CPLAY_NEOPIXELPIN A2      ///< neopixel pin
+#define CPLAY_EXT_BTN_PIN A1      ///< external button pin
 #define CPLAY_NUMPIXELS (19*8)    ///< onboard neopixel led count
 #define CPLAY_REDLED 13           ///< red led pin
 #define CPLAY_IR_EMITTER 25       ///< IR emmitter pin

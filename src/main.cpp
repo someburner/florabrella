@@ -4,6 +4,7 @@
 #include "FastLED.h"
 #include "gradients.h"
 #include "LUT.h"
+#include "Config.h"
 
 // Effects
 #include "Bloom.h"
@@ -16,8 +17,6 @@
 #include "MeteorRain.h"
 #include "Strobe.h"
 
-// #define USE_NEOPIXEL_DMA
-
 #ifdef USE_NEOPIXEL_DMA
 #include <Adafruit_NeoPixel_ZeroDMA.h>
 #endif
@@ -27,6 +26,52 @@ CRGB leds[NUM_LEDS];
 #ifdef USE_NEOPIXEL_DMA
 Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
 #endif
+
+#ifdef USE_BTN_EFFECT_CYCLE
+// declare effect methods
+void run_bloom(void);
+void run_dropdownfade(void);
+void run_edgerotate(void);
+void run_edgeloop(void);
+void run_pingpong(void);
+void run_gradienttest(void);
+void run_topbottomanims(void);
+void run_meteorrain(void);
+void run_strobe(void);
+
+// List of patterns to cycle through.  Each is defined as a separate function below.
+typedef void (*SimplePatternList[])();
+SimplePatternList gPatterns = {
+    run_bloom,          // 0
+    run_dropdownfade,   // 1
+    run_edgerotate,     // 2
+    run_edgeloop,       // 3
+    run_edgeloop,       // 4
+    run_gradienttest,   // 5
+    run_topbottomanims, // 6
+    run_meteorrain,     // 7
+    run_strobe          // 8
+};
+
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+
+// External Button variables
+#define BTN_DEBOUNCE_MS 100UL
+static uint32_t lastBtnMillis = 0;
+static volatile bool incPattern = false;
+static bool isRunning = false;
+
+void ext_btn_isr(void)
+{
+    uint32_t now = millis();
+    if((now - lastBtnMillis) > BTN_DEBOUNCE_MS) {
+        lastBtnMillis = now;
+        incPattern = true;
+        isRunning = false; // TODO: unsafe
+        DEBUGln("btn!");
+    }
+}
+#endif // USE_BTN_EFFECT_CYCLE
 
 void setup(void)
 {
@@ -39,13 +84,16 @@ void setup(void)
     FastLED.clear(true);
     FastLED.setBrightness(DEFAULT_BRIGHTNESS);
 
+#ifdef USE_BTN_EFFECT_CYCLE
+    pinMode(CPLAY_EXT_BTN_PIN, INPUT_PULLUP);
+    attachInterrupt(CPLAY_EXT_BTN_PIN, ext_btn_isr, FALLING);
+#endif // USE_BTN_EFFECT_CYCLE
+
 #ifdef USE_NEOPIXEL_DMA
     strip.begin();
     strip.setBrightness(DEFAULT_BRIGHTNESS);
 #endif
 }
-
-bool isRunning = false;
 
 // cool
 void run_bloom(void)
@@ -120,10 +168,17 @@ void run_strobe(void)
     while(isRunning) s.run();
 }
 
-// Strobe(0xff, 0xff, 0xff, 10, 50, 1000);
-
 void loop(void)
 {
+#ifdef USE_BTN_EFFECT_CYCLE
+    static uint8_t nextPatternNum = 0;
+
+    // Call the current pattern function once, updating the 'leds' array
+    gPatterns[nextPatternNum]();
+    // if we returned, ext button stopped the effect
+    nextPatternNum = (nextPatternNum + 1) % ARRAY_SIZE(gPatterns);
+
+#else
     // run_dropdownfade();
     // run_pingpong();
     // run_edgeloop();
@@ -133,4 +188,5 @@ void loop(void)
     // run_topbottomanims();
     run_meteorrain();
     // run_strobe();
+#endif
 }
