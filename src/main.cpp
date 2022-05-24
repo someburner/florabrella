@@ -7,6 +7,8 @@
 #include "LUT.h"
 #include "Config.h"
 
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+
 // Effects
 #include "AccelSparkle.h"
 #include "Bloom.h"
@@ -37,10 +39,21 @@ LIS3DH accel;
 Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
 #endif
 
-static bool isRunning = false;
+static bool _isRunning = false;
+static bool _cycleAll = false;
+
+static bool isRunning(void) {
+    if(_cycleAll) {
+        EVERY_N_SECONDS(30) {
+            _isRunning = false;
+        }
+    }
+    return _isRunning;
+}
 
 #ifdef USE_BTN_EFFECT_CYCLE
 // declare effect methods
+void run_cycle_all(void);
 void run_meteorrain(void);
 void run_meteorrain0(void);
 void run_meteorrain1(void);
@@ -50,7 +63,15 @@ void run_dropdownfade(void);
 void run_edgerotate(void);
 void run_edgeloop(void);
 void run_pingpong(void);
-void run_gradienttest(void);
+void run_gradienttests(void);
+void run_gradienttest0(void);
+void run_gradienttest1(void);
+void run_gradienttest2(void);
+void run_gradienttest3(void);
+void run_gradienttest4(void);
+void run_gradienttest5(void);
+void run_gradienttest6(void);
+void run_gradienttest7(void);
 void run_topbottomanims(void);
 void run_topbottomanim0(void);
 void run_topbottomanim1(void);
@@ -66,6 +87,8 @@ void run_strobe(void);
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 SimplePatternList gPatterns = {
+    run_cycle_all,
+    run_meteorrain0,
     run_meteorrain0,
     run_meteorrain1,
     run_accel_sparkle,
@@ -73,8 +96,15 @@ SimplePatternList gPatterns = {
     run_dropdownfade,
     run_edgerotate,
     run_edgeloop,
-    run_edgeloop,
-    run_gradienttest,
+    run_pingpong,
+    run_gradienttest0,
+    run_gradienttest1,
+    run_gradienttest2,
+    run_gradienttest3,
+    run_gradienttest4,
+    run_gradienttest5,
+    run_gradienttest6,
+    run_gradienttest7,
     run_topbottomanim0,
     run_topbottomanim1,
     run_topbottomanim2,
@@ -87,20 +117,17 @@ SimplePatternList gPatterns = {
     run_strobe
 };
 
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-
 // External Button variables
 #define BTN_DEBOUNCE_MS 100UL
 static uint32_t lastBtnMillis = 0;
-static volatile bool incPattern = false;
 
 void ext_btn_isr(void)
 {
     uint32_t now = millis();
     if((now - lastBtnMillis) > BTN_DEBOUNCE_MS) {
         lastBtnMillis = now;
-        incPattern = true;
-        isRunning = false; // TODO: unsafe
+        _isRunning = false; // TODO: unsafe
+        _cycleAll = false;
         DEBUGln("btn!");
     }
 }
@@ -143,173 +170,245 @@ void setup(void)
 
 void run_meteorrain(void)
 {
-    isRunning = true;
+    _isRunning = true;
     // MeteorRain mr = MeteorRain();
     // MeteorRain mr = MeteorRain(CRGB::Blue, false);
     MeteorRain mr = MeteorRain(CRGB::Black, true);
-    while(isRunning) mr.run();
+    while(isRunning()) mr.run();
 }
 
 void run_meteorrain0(void)
 {
-    isRunning = true;
+    _isRunning = true;
     // MeteorRain mr = MeteorRain();
     // MeteorRain mr = MeteorRain(CRGB::Blue, false);
     MeteorRain mr = MeteorRain(CRGB::Black, true);
-    while(isRunning) mr.run();
+    while(isRunning()) mr.run();
 }
 
 void run_meteorrain1(void)
 {
-    isRunning = true;
+    _isRunning = true;
     // MeteorRain mr = MeteorRain();
     // MeteorRain mr = MeteorRain(CRGB::Blue, false);
     MeteorRain mr = MeteorRain(CRGB::Black, true);
     mr.SetLightning(true);
-    while(isRunning) mr.run();
+    while(isRunning()) mr.run();
 }
 
 
 // cool
 void run_bloom(void)
 {
-    isRunning = true;
+    _isRunning = true;
     Bloom bloom = Bloom();
-    while(isRunning) bloom.run();
+    while(isRunning()) bloom.run();
 }
 
 // nice but needs improvement
 void run_dropdownfade(void)
 {
-    isRunning = true;
+    _isRunning = true;
     DropDownFade ddf = DropDownFade();
-    while(isRunning) ddf.run();
+    while(isRunning()) ddf.run();
 }
 
 // a bit hard on the eyes but demos it
 void run_edgerotate(void)
 {
-    isRunning = true;
+    _isRunning = true;
     EdgeRotate er = EdgeRotate();
-    while(isRunning) er.run();
+    while(isRunning()) er.run();
 }
 
 // kinda cool but needs variation
 void run_edgeloop(void)
 {
-    isRunning = true;
+    _isRunning = true;
     EdgeLoop el = EdgeLoop();
-    while(isRunning) el.run();
+    while(isRunning()) el.run();
 }
 
 // also kinda cool but also needs variation
 void run_pingpong(void)
 {
-    isRunning = true;
+    _isRunning = true;
     PingPong pp = PingPong();
-    while(isRunning) pp.run();
+    while(isRunning()) pp.run();
 }
 
-// tests - some good ones in there
-void run_gradienttest(void)
+// ------------------------------ gradienttests ----------------------------- //
+void run_gradienttests(void)
 {
-    isRunning = true;
+    _isRunning = true;
     GradientTest gt = GradientTest();
-    while(isRunning) gt.run();
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest0(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(0);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest1(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(1);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest2(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(2);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest3(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(3);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest4(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(4);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest5(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(5);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest6(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(6);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest7(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(7);
+    while(isRunning()) gt.run();
 }
 
 // ------------------------------ topbottomanims ---------------------------- //
 // kiwiholmberg - some good ones in here
 void run_topbottomanims(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(); // all
     // TopBottom tb = TopBottom(7); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim0(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(0); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim1(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(1); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim2(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(2); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim3(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(3); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim4(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(4); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim5(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(5); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim6(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(6); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim7(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(7); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 
 void run_topbottomanim8(void)
 {
-    isRunning = true;
+    _isRunning = true;
     TopBottom tb = TopBottom(8); // specific
-    while(isRunning) tb.run();
+    while(isRunning()) tb.run();
 }
 // -------------------------------------------------------------------------- //
 
 void run_strobe(void)
 {
-    isRunning = true;
+    _isRunning = true;
     Strobe s = Strobe(CRGB::White, 10, 50);
-    while(isRunning) s.run();
+    while(isRunning()) s.run();
 }
 
 void run_accel_sparkle(void)
 {
-    isRunning = true;
+    _isRunning = true;
     AccelSparkle as = AccelSparkle(CRGB::White);
-    while(isRunning) as.run();
+    while(isRunning()) as.run();
+}
+
+void run_cycle_all(void)
+{
+    _isRunning = true;
+    _cycleAll = true;
+    for(int i = 1; i < ARRAY_SIZE(gPatterns) - 1; i++) {
+        gPatterns[i]();
+    }
+    _cycleAll = false;
 }
 
 void loop(void)
 {
 #ifdef USE_BTN_EFFECT_CYCLE
     static uint8_t nextPatternNum = 0;
+
+    if(nextPatternNum == 0) {
+        _cycleAll = true;
+    } else {
+        _cycleAll = false;
+    }
 
     // Call the current pattern function once, updating the 'leds' array
     gPatterns[nextPatternNum]();
@@ -321,7 +420,7 @@ void loop(void)
     // run_pingpong();
     // run_edgeloop();
     // run_edgerotate();
-    // run_gradienttest();
+    // run_gradienttests();
     // run_bloom();
     // run_topbottomanims();
     // run_meteorrain();
