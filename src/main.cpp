@@ -23,6 +23,12 @@
 #include <Adafruit_NeoPixel_ZeroDMA.h>
 #endif
 
+#ifdef USE_ONBOARD_BTN
+    #define BTN_PIN CPLAY_RIGHTBUTTON
+#else
+    #define BTN_PIN CPLAY_EXT_BTN_PIN
+#endif
+
 CRGB leds[NUM_LEDS];
 
 LIS3DH accel;
@@ -35,6 +41,10 @@ static bool isRunning = false;
 
 #ifdef USE_BTN_EFFECT_CYCLE
 // declare effect methods
+void run_meteorrain(void);
+void run_meteorrain0(void);
+void run_meteorrain1(void);
+void run_accel_sparkle(void);
 void run_bloom(void);
 void run_dropdownfade(void);
 void run_edgerotate(void);
@@ -42,13 +52,22 @@ void run_edgeloop(void);
 void run_pingpong(void);
 void run_gradienttest(void);
 void run_topbottomanims(void);
-void run_meteorrain(void);
+void run_topbottomanim0(void);
+void run_topbottomanim1(void);
+void run_topbottomanim2(void);
+void run_topbottomanim3(void);
+void run_topbottomanim4(void);
+void run_topbottomanim5(void);
+void run_topbottomanim6(void);
+void run_topbottomanim7(void);
+void run_topbottomanim8(void);
 void run_strobe(void);
-void run_accel_sparkle(void);
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 SimplePatternList gPatterns = {
+    run_meteorrain0,
+    run_meteorrain1,
     run_accel_sparkle,
     run_bloom,
     run_dropdownfade,
@@ -56,8 +75,15 @@ SimplePatternList gPatterns = {
     run_edgeloop,
     run_edgeloop,
     run_gradienttest,
-    run_topbottomanims,
-    run_meteorrain,
+    run_topbottomanim0,
+    run_topbottomanim1,
+    run_topbottomanim2,
+    run_topbottomanim3,
+    run_topbottomanim4,
+    run_topbottomanim5,
+    run_topbottomanim6,
+    run_topbottomanim7,
+    run_topbottomanim8,
     run_strobe
 };
 
@@ -100,8 +126,13 @@ void setup(void)
     }
 
 #ifdef USE_BTN_EFFECT_CYCLE
-    pinMode(CPLAY_EXT_BTN_PIN, INPUT_PULLUP);
-    attachInterrupt(CPLAY_EXT_BTN_PIN, ext_btn_isr, FALLING);
+#if BTN_PIN == CPLAY_EXT_BTN_PIN
+    pinMode(BTN_PIN, INPUT_PULLUP);
+    attachInterrupt(BTN_PIN, ext_btn_isr, FALLING);
+#else // BTN_PIN != CPLAY_EXT_BTN_PIN
+    pinMode(BTN_PIN, INPUT_PULLDOWN);
+    attachInterrupt(BTN_PIN, ext_btn_isr, RISING);
+#endif // BTN_PIN == CPLAY_EXT_BTN_PIN
 #endif // USE_BTN_EFFECT_CYCLE
 
 #ifdef USE_NEOPIXEL_DMA
@@ -109,6 +140,35 @@ void setup(void)
     strip.setBrightness(DEFAULT_BRIGHTNESS);
 #endif
 }
+
+void run_meteorrain(void)
+{
+    isRunning = true;
+    // MeteorRain mr = MeteorRain();
+    // MeteorRain mr = MeteorRain(CRGB::Blue, false);
+    MeteorRain mr = MeteorRain(CRGB::Black, true);
+    while(isRunning) mr.run();
+}
+
+void run_meteorrain0(void)
+{
+    isRunning = true;
+    // MeteorRain mr = MeteorRain();
+    // MeteorRain mr = MeteorRain(CRGB::Blue, false);
+    MeteorRain mr = MeteorRain(CRGB::Black, true);
+    while(isRunning) mr.run();
+}
+
+void run_meteorrain1(void)
+{
+    isRunning = true;
+    // MeteorRain mr = MeteorRain();
+    // MeteorRain mr = MeteorRain(CRGB::Blue, false);
+    MeteorRain mr = MeteorRain(CRGB::Black, true);
+    mr.SetLightning(true);
+    while(isRunning) mr.run();
+}
+
 
 // cool
 void run_bloom(void)
@@ -158,6 +218,7 @@ void run_gradienttest(void)
     while(isRunning) gt.run();
 }
 
+// ------------------------------ topbottomanims ---------------------------- //
 // kiwiholmberg - some good ones in here
 void run_topbottomanims(void)
 {
@@ -167,14 +228,69 @@ void run_topbottomanims(void)
     while(isRunning) tb.run();
 }
 
-void run_meteorrain(void)
+void run_topbottomanim0(void)
 {
     isRunning = true;
-    // MeteorRain mr = MeteorRain();
-    // MeteorRain mr = MeteorRain(CRGB::Blue, false);
-    MeteorRain mr = MeteorRain(CRGB::Black, true);
-    while(isRunning) mr.run();
+    TopBottom tb = TopBottom(0); // specific
+    while(isRunning) tb.run();
 }
+
+void run_topbottomanim1(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(1); // specific
+    while(isRunning) tb.run();
+}
+
+void run_topbottomanim2(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(2); // specific
+    while(isRunning) tb.run();
+}
+
+void run_topbottomanim3(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(3); // specific
+    while(isRunning) tb.run();
+}
+
+void run_topbottomanim4(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(4); // specific
+    while(isRunning) tb.run();
+}
+
+void run_topbottomanim5(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(5); // specific
+    while(isRunning) tb.run();
+}
+
+void run_topbottomanim6(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(6); // specific
+    while(isRunning) tb.run();
+}
+
+void run_topbottomanim7(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(7); // specific
+    while(isRunning) tb.run();
+}
+
+void run_topbottomanim8(void)
+{
+    isRunning = true;
+    TopBottom tb = TopBottom(8); // specific
+    while(isRunning) tb.run();
+}
+// -------------------------------------------------------------------------- //
 
 void run_strobe(void)
 {

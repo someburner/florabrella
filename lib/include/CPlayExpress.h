@@ -5,7 +5,7 @@
 // https://github.com/adafruit/Adafruit_CircuitPlayground/blob/master/Adafruit_Circuit_Playground.h
 
 #define CPLAY_LEFTBUTTON 4        ///< left button pin
-#define CPLAY_RIGHTBUTTON 5       ///< right button pin
+#define CPLAY_RIGHTBUTTON 5       ///< right button pin (D5)
 #define CPLAY_SLIDESWITCHPIN 7    ///< slide switch pin
 #define CPLAY_NEOPIXELPIN A2      ///< neopixel pin
 #define CPLAY_EXT_BTN_PIN A1      ///< external button pin
