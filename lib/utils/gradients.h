@@ -18,7 +18,40 @@ DEFINE_GRADIENT_PALETTE(heatmap_gp) {
     200, 255, 255,   0, // bright yellow
     255, 255, 255, 255  // full white
 };
-static CRGBPalette16 myPal = heatmap_gp;
+static CRGBPalette16 heatmap = heatmap_gp;
+
+// Gradient palette "bhw4_051_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw4/tn/bhw4_051.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 36 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE(bhw4_051_gp) {
+    0,   1,  1,  4,
+   28,  16, 24, 77,
+   66,  35, 87,160,
+  101, 125,187,205,
+  127, 255,233, 13,
+  145, 125,187,205,
+  193,  28, 70,144,
+  224,  14, 19, 62,
+  255,   1,  1,  4
+};
+static CRGBPalette16 blueyellowblue = bhw4_051_gp;
+
+// Gradient palette "bhw4_029_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/bhw/bhw4/tn/bhw4_029.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 24 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE(bhw4_029_gp) {
+    0,  28,  7, 75,
+   43,  73, 22, 74,
+   79, 177,146,197,
+  122,  21, 72,137,
+  165,  15,184, 75,
+  255, 224,205,  4
+};
+static CRGBPalette16 semirainbow = bhw4_029_gp;
 
 DEFINE_GRADIENT_PALETTE(greenblue_gp) {
       0,   0, 255, 245,
