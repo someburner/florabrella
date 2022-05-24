@@ -85,12 +85,16 @@ class MeteorRain {
             meteors[i].SetChangeHue(_changeHue);
         }
     }
+    void SetLightning(bool lightning) {
+        _lightning = lightning;
+    }
     void run();
 
   private:
     // Meteor m0 = Meteor(0);
     Meteor meteors[8];
     bool _changeHue = false;
+    bool _lightning = false;
     CRGB _defaultColor = CRGB::White;
     uint8_t startIndex = 0; // hue change
 };
@@ -107,12 +111,13 @@ void MeteorRain::run(void)
         }
     }
 
-    // TODO: make optional
-    EVERY_N_MILLISECONDS(10000) {
-        uint8_t flashes = random8(0, 3);
-        uint8_t flashDelay = 50;
-        Strobe s = Strobe(CRGB::White, flashes, flashDelay);
-        s.run();
+    if(_lightning) {
+        EVERY_N_MILLISECONDS(10000) {
+            uint8_t flashes = random8(0, 3);
+            uint8_t flashDelay = 50;
+            Strobe s = Strobe(CRGB::White, flashes, flashDelay);
+            s.run();
+        }
     }
 
     // hue change
