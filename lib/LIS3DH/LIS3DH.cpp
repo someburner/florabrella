@@ -32,6 +32,7 @@ LIS3DH::LIS3DH(TwoWire *Wi)
     : _cs(-1), _mosi(-1), _miso(-1), _sck(-1), _sensorID(-1)
 {
     I2Cinterface = Wi;
+    initialized = false;
 }
 
 // Instantiates a new LIS3DH class using hardware SPI
@@ -43,6 +44,7 @@ LIS3DH::LIS3DH(int8_t cspin, SPIClass *theSPI)
     _sck = -1;
     _sensorID = -1;
     SPIinterface = theSPI;
+    initialized = false;
 }
 
 // Instantiates a new LIS3DH class using software SPI
@@ -53,6 +55,7 @@ LIS3DH::LIS3DH(int8_t cspin, int8_t mosipin, int8_t misopin, int8_t sckpin)
     _miso = misopin;
     _sck = sckpin;
     _sensorID = -1;
+    initialized = false;
 }
 
 /*!
@@ -105,13 +108,16 @@ bool LIS3DH::begin(uint8_t i2caddr = I2C_ADDR, uint8_t nWAI)
         return false;
     }
 
-    // enable z axis only, enable low power
+    // enable x,y axis only, enable low power
     // uint8_t ctrl_reg1 = (1 << lis3dh_ctrl_reg1_lp_en) | (1 << lis3dh_ctrl_reg1_z_en)
-    uint8_t ctrl_reg1 = (1 << lis3dh_ctrl_reg1_z_en)
+    uint8_t ctrl_reg1 =
+        // (1 << lis3dh_ctrl_reg1_z_en)
+        (1 << lis3dh_ctrl_reg1_x_en)
+        | (1 << lis3dh_ctrl_reg1_y_en)
     ;
     writeRegister8(CTRL_REG1, ctrl_reg1);
     // 50hz rate
-    setDataRate(LIS3DH_DATARATE_50_HZ);
+    setDataRate(LIS3DH_DATARATE_100_HZ);
 
     // High res & BDU enabled
     // writeRegister8(CTRL_REG4, 0x88);
@@ -133,6 +139,8 @@ bool LIS3DH::begin(uint8_t i2caddr = I2C_ADDR, uint8_t nWAI)
         Serial.println(readRegister8(i), HEX);
     }
     */
+
+    initialized = true;
 
     return true;
 }
@@ -455,9 +463,9 @@ void LIS3DH::intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool 
     //Build INT_CFG 0x30 or 0x34
     //Detect movement or stop
     if(moveType == 1)
-       val = (1 << lis3dh_int1_cfg_zh_ie);
+       val = (1 << lis3dh_int1_cfg_yh_ie) | (1 << lis3dh_int1_cfg_xh_ie);
     else
-       val = (1 << lis3dh_int1_cfg_zl_ie);
+       val = (1 << lis3dh_int1_cfg_yl_ie) | (1 << lis3dh_int1_cfg_xl_ie);
 
     // _DEBBUG ("LIS3DH_INT_CFG: 0x", val);
     writeRegister8(INT1_CFG, val);

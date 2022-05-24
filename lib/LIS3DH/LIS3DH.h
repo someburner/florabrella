@@ -57,6 +57,10 @@ public:
                   uint8_t timelatency = 20, uint8_t timewindow = 255);
     uint8_t getClick(void);
 
+    bool isInitialized(void) {
+        return initialized;
+    }
+
     void intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool polarity);
 
     int16_t x; /**< x axis value */
@@ -75,6 +79,7 @@ protected:
 private:
     TwoWire *I2Cinterface;
     SPIClass *SPIinterface;
+    uint8_t initialized;
 
     uint8_t _wai;
 

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "CPlayExpress.h"
+#include "LIS3DH.h"
 #include "LEDconfig.h"
 #include "FastLED.h"
 #include "gradients.h"
@@ -7,6 +8,7 @@
 #include "Config.h"
 
 // Effects
+#include "AccelSparkle.h"
 #include "Bloom.h"
 #include "DropDownFade.h"
 #include "EdgeRotate.h"
@@ -23,9 +25,13 @@
 
 CRGB leds[NUM_LEDS];
 
+LIS3DH accel;
+
 #ifdef USE_NEOPIXEL_DMA
 Adafruit_NeoPixel_ZeroDMA strip(CPLAY_NUMPIXELS, A2, NEO_GRB);
 #endif
+
+static bool isRunning = false;
 
 #ifdef USE_BTN_EFFECT_CYCLE
 // declare effect methods
@@ -38,19 +44,21 @@ void run_gradienttest(void);
 void run_topbottomanims(void);
 void run_meteorrain(void);
 void run_strobe(void);
+void run_accel_sparkle(void);
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
 SimplePatternList gPatterns = {
-    run_bloom,          // 0
-    run_dropdownfade,   // 1
-    run_edgerotate,     // 2
-    run_edgeloop,       // 3
-    run_edgeloop,       // 4
-    run_gradienttest,   // 5
-    run_topbottomanims, // 6
-    run_meteorrain,     // 7
-    run_strobe          // 8
+    run_accel_sparkle,
+    run_bloom,
+    run_dropdownfade,
+    run_edgerotate,
+    run_edgeloop,
+    run_edgeloop,
+    run_gradienttest,
+    run_topbottomanims,
+    run_meteorrain,
+    run_strobe
 };
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
@@ -59,7 +67,6 @@ SimplePatternList gPatterns = {
 #define BTN_DEBOUNCE_MS 100UL
 static uint32_t lastBtnMillis = 0;
 static volatile bool incPattern = false;
-static bool isRunning = false;
 
 void ext_btn_isr(void)
 {
@@ -83,6 +90,14 @@ void setup(void)
     FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.clear(true);
     FastLED.setBrightness(DEFAULT_BRIGHTNESS);
+
+    DEBUG("LIS3DH init: ");
+    accel = LIS3DH(&Wire1); // i2c on wire1
+    if(accel.begin(CPLAY_LIS3DH_ADDRESS)) {
+        DEBUGln("success");
+    } else {
+        DEBUGln("fail");
+    }
 
 #ifdef USE_BTN_EFFECT_CYCLE
     pinMode(CPLAY_EXT_BTN_PIN, INPUT_PULLUP);
@@ -168,6 +183,13 @@ void run_strobe(void)
     while(isRunning) s.run();
 }
 
+void run_accel_sparkle(void)
+{
+    isRunning = true;
+    AccelSparkle as = AccelSparkle(CRGB::White);
+    while(isRunning) as.run();
+}
+
 void loop(void)
 {
 #ifdef USE_BTN_EFFECT_CYCLE
@@ -186,7 +208,8 @@ void loop(void)
     // run_gradienttest();
     // run_bloom();
     // run_topbottomanims();
-    run_meteorrain();
+    // run_meteorrain();
     // run_strobe();
+    run_accel_sparkle();
 #endif
 }
