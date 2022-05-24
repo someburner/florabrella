@@ -13,20 +13,22 @@ class DropDownFade {
 
   private:
     int pxi = 0;
+    uint8_t hue = 0;
 };
 
 void DropDownFade::run(void)
 {
-    EVERY_N_MILLISECONDS(500) {
+    EVERY_N_MILLISECONDS(400) {
         pxi++;
         if(pxi == 19) {
             pxi = 0;
+            hue += 32;
         }
     }
     for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
-        leds[matrix[pxi][branch]] = CRGB::Green;
+        leds[matrix[pxi][branch]] = CHSV(hue, 255, 128);
     }
-    EVERY_N_MILLISECONDS(5) {
+    EVERY_N_MILLISECONDS(20) {
         fadeToBlackBy(leds, NUM_LEDS, 10);
     }
 

@@ -19,7 +19,7 @@ class PingPong {
 
 void PingPong::run(void)
 {
-    EVERY_N_MILLISECONDS(50) {
+    EVERY_N_MILLISECONDS(25) {
         if(direction) {
             pxi++;
             if(pxi == 2*19 - 1) direction = false;
