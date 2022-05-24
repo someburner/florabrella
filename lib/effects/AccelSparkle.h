@@ -21,7 +21,7 @@ class AccelSparkle {
         if(accel.isInitialized()) {
             // NOTE: higher threshold == easier detect?
             // accel.intConf(1, 13, 10, 0); // active high
-            accel.intConf(1, 64, 10, 0); // active high
+            accel.intConf(1, 48, 10, 0); // active high
             attachInterrupt(CPLAY_LIS3DH_INTERRUPT, accel_isr, RISING);
         }
     };

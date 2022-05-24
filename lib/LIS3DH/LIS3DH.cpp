@@ -113,7 +113,7 @@ bool LIS3DH::begin(uint8_t i2caddr = I2C_ADDR, uint8_t nWAI)
     uint8_t ctrl_reg1 =
         // (1 << lis3dh_ctrl_reg1_z_en)
         (1 << lis3dh_ctrl_reg1_x_en)
-        | (1 << lis3dh_ctrl_reg1_y_en)
+        // | (1 << lis3dh_ctrl_reg1_y_en)
     ;
     writeRegister8(CTRL_REG1, ctrl_reg1);
     // 50hz rate
@@ -463,9 +463,13 @@ void LIS3DH::intConf(uint8_t moveType, uint8_t threshold, uint8_t timeDur, bool 
     //Build INT_CFG 0x30 or 0x34
     //Detect movement or stop
     if(moveType == 1)
-       val = (1 << lis3dh_int1_cfg_yh_ie) | (1 << lis3dh_int1_cfg_xh_ie);
+       val =
+           // (1 << lis3dh_int1_cfg_yh_ie) |
+           (1 << lis3dh_int1_cfg_xh_ie);
     else
-       val = (1 << lis3dh_int1_cfg_yl_ie) | (1 << lis3dh_int1_cfg_xl_ie);
+        val =
+            // (1 << lis3dh_int1_cfg_yl_ie) |
+            (1 << lis3dh_int1_cfg_xl_ie);
 
     // _DEBBUG ("LIS3DH_INT_CFG: 0x", val);
     writeRegister8(INT1_CFG, val);
