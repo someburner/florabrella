@@ -17,6 +17,8 @@
         DEBUGln(x); \
     } while(0);
 #else
+    #define SERIAL_BAUD                 115200 //19200 //57600 //115200 // 500000
+    #define DEBUGbegin(input)           do { } while(0)
     #define DEBUG(input)                do { } while(0)
     #define DEBUGln(input)              do { } while(0)
     #define DEBUGf(input)               do { } while(0)
