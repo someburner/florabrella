@@ -58,7 +58,16 @@ void run_meteorrain(void);
 void run_meteorrain0(void);
 void run_meteorrain1(void);
 void run_accel_sparkle(void);
-void run_bloom(void);
+void run_bloom0(void);
+void run_bloom1(void);
+void run_bloom2(void);
+void run_bloom3(void);
+void run_bloom4(void);
+void run_bloom5(void);
+void run_bloom6(void);
+void run_bloom7(void);
+void run_bloom8(void);
+void run_bloom9(void);
 void run_dropdownfade(void);
 void run_edgerotate(void);
 void run_edgeloop(void);
@@ -72,6 +81,11 @@ void run_gradienttest4(void);
 void run_gradienttest5(void);
 void run_gradienttest6(void);
 void run_gradienttest7(void);
+void run_gradienttest8(void);
+void run_gradienttest9(void);
+void run_gradienttest10(void);
+void run_gradienttest11(void);
+void run_gradienttest12(void);
 void run_topbottomanims(void);
 void run_topbottomanim0(void);
 void run_topbottomanim1(void);
@@ -82,6 +96,8 @@ void run_topbottomanim5(void);
 void run_topbottomanim6(void);
 void run_topbottomanim7(void);
 void run_topbottomanim8(void);
+void run_topbottomanim9(void);
+void run_topbottomanim10(void);
 void run_strobe(void);
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
@@ -92,7 +108,16 @@ SimplePatternList gPatterns = {
     run_meteorrain0,
     run_meteorrain1,
     run_accel_sparkle,
-    run_bloom,
+    run_bloom0,
+    run_bloom1,
+    run_bloom2,
+    run_bloom3,
+    run_bloom4,
+    run_bloom5,
+    run_bloom6,
+    run_bloom7,
+    run_bloom8,
+    run_bloom9,
     run_dropdownfade,
     run_edgerotate,
     run_edgeloop,
@@ -105,6 +130,11 @@ SimplePatternList gPatterns = {
     run_gradienttest5,
     run_gradienttest6,
     run_gradienttest7,
+    run_gradienttest8,
+    run_gradienttest9,
+    run_gradienttest10,
+    run_gradienttest11,
+    run_gradienttest12,
     run_topbottomanim0,
     run_topbottomanim1,
     run_topbottomanim2,
@@ -114,11 +144,13 @@ SimplePatternList gPatterns = {
     run_topbottomanim6,
     run_topbottomanim7,
     run_topbottomanim8,
+    run_topbottomanim9,
+    run_topbottomanim10,
     run_strobe
 };
 
 // External Button variables
-#define BTN_DEBOUNCE_MS 100UL
+#define BTN_DEBOUNCE_MS 500UL
 static uint32_t lastBtnMillis = 0;
 
 void ext_btn_isr(void)
@@ -198,10 +230,82 @@ void run_meteorrain1(void)
 
 
 // cool
-void run_bloom(void)
+void run_bloom0(void)
 {
     _isRunning = true;
     Bloom bloom = Bloom();
+    while(isRunning()) bloom.run();
+}
+
+// static red
+void run_bloom1(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(0);
+    while(isRunning()) bloom.run();
+}
+
+// static purple
+void run_bloom2(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(32);
+    while(isRunning()) bloom.run();
+}
+
+// static blue
+void run_bloom3(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(64);
+    while(isRunning()) bloom.run();
+}
+
+// static teal
+void run_bloom4(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(96);
+    while(isRunning()) bloom.run();
+}
+
+// static green
+void run_bloom5(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(128);
+    while(isRunning()) bloom.run();
+}
+
+// static yellow
+void run_bloom6(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(160);
+    while(isRunning()) bloom.run();
+}
+
+// static orange
+void run_bloom7(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(192);
+    while(isRunning()) bloom.run();
+}
+
+// static pink
+void run_bloom8(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(224);
+    while(isRunning()) bloom.run();
+}
+
+// static violet
+void run_bloom9(void)
+{
+    _isRunning = true;
+    Bloom bloom = Bloom(255);
     while(isRunning()) bloom.run();
 }
 
@@ -301,6 +405,41 @@ void run_gradienttest7(void)
     while(isRunning()) gt.run();
 }
 
+void run_gradienttest8(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(8);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest9(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(9);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest10(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(10);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest11(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(11);
+    while(isRunning()) gt.run();
+}
+
+void run_gradienttest12(void)
+{
+    _isRunning = true;
+    GradientTest gt = GradientTest(12);
+    while(isRunning()) gt.run();
+}
+
 // ------------------------------ topbottomanims ---------------------------- //
 // kiwiholmberg - some good ones in here
 void run_topbottomanims(void)
@@ -373,6 +512,20 @@ void run_topbottomanim8(void)
     TopBottom tb = TopBottom(8); // specific
     while(isRunning()) tb.run();
 }
+
+void run_topbottomanim9(void)
+{
+    _isRunning = true;
+    TopBottom tb = TopBottom(9); // specific
+    while(isRunning()) tb.run();
+}
+
+void run_topbottomanim10(void)
+{
+    _isRunning = true;
+    TopBottom tb = TopBottom(10); // specific
+    while(isRunning()) tb.run();
+}
 // -------------------------------------------------------------------------- //
 
 void run_strobe(void)
@@ -421,7 +574,7 @@ void loop(void)
     // run_edgeloop();
     // run_edgerotate();
     // run_gradienttests();
-    // run_bloom();
+    // run_bloom0();
     // run_topbottomanims();
     // run_meteorrain();
     // run_strobe();

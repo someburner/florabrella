@@ -22,8 +22,8 @@ void EdgeRotate::run(void)
     EVERY_N_MILLISECONDS(100) {
         edgeN = (edgeN + 1) % 8;
         for(int i = 0; i < BRANCH_LEN; i++) {
-            leds[matrix[i][prev_edgeN]] = CHSV( hue+0, 255, 192);
-            leds[matrix[i][edgeN]] = CHSV( hue+32, 255, 192);
+            leds[matrix[i][prev_edgeN]] = CHSV( hue+0, 255, 96);
+            leds[matrix[i][edgeN]] = CHSV( hue+32, 255, 96);
         }
         prev_edgeN = edgeN;
         hue += 16;

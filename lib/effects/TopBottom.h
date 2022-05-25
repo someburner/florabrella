@@ -12,7 +12,7 @@ class TopBottom {
   public:
     TopBottom(){};
     TopBottom(int anim){
-        if(_anim >= 0 && _anim <= 9) {
+        if(_anim >= 0 && _anim <= 10) {
             _anim = anim;
             _allAnims = false;
         }
@@ -29,8 +29,11 @@ class TopBottom {
     void anim6();
     void anim7();
     void anim8();
+    void anim9();
+    void anim10();
 
     bool _allAnims = true;
+    bool _slower = true;
     uint8_t _anim = 0;
     const uint8_t _maxAnims = 9;
 
@@ -43,7 +46,7 @@ class TopBottom {
 void TopBottom::anim0(void)
 {
     currentPalette = RainbowStripeColors_p;
-    uint8_t brightness = 255;
+    uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
 
     for(int brlen = 0; brlen < BRANCH_LEN; brlen++) {  // 0...18
@@ -59,7 +62,7 @@ void TopBottom::anim0(void)
 void TopBottom::anim1(void)
 {
     currentPalette = PartyColors_p;
-    uint8_t brightness = 255;
+    uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
 
     for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
@@ -75,7 +78,7 @@ void TopBottom::anim1(void)
 void TopBottom::anim2(void)
 {
     currentPalette = PartyColors_p;
-    uint8_t brightness = 255;
+    uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
 
     for(int brlen = 0; brlen < BRANCH_LEN; brlen++) {  // 0...18
@@ -91,7 +94,7 @@ void TopBottom::anim2(void)
 void TopBottom::anim3(void)
 {
     currentPalette = bhw4_063_p;
-    uint8_t brightness = 255;
+    uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
 
     for(int brlen = 0; brlen < BRANCH_LEN; brlen++) {  // 0...18
@@ -139,7 +142,7 @@ void TopBottom::anim5(void)
 void TopBottom::anim6(void)
 {
     currentPalette = PartyColors_p;
-    uint8_t brightness = 255;
+    uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
 
     for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
@@ -155,7 +158,7 @@ void TopBottom::anim6(void)
 void TopBottom::anim7(void)
 {
     currentPalette = RainbowColors_p;
-    uint8_t brightness = 255;
+    uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
 
     static uint8_t currentClusterCol = 0;
@@ -235,6 +238,39 @@ void TopBottom::anim8(void)
     FastLED.show();
 }
 
+void TopBottom::anim9(void)
+{
+    // currentPalette = bhw4_063_p;
+    CRGBPalette32 currentPalette = ofaurora;
+    uint8_t brightness = 96;
+    uint8_t colorIndex = startIndex;
+
+    for(int brlen = 0; brlen < BRANCH_LEN; brlen++) {  // 0...18
+        for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
+            leds[matrix[brlen][branch]] = ColorFromPalette(currentPalette, colorIndex, brightness, currentBlending);
+        }
+        colorIndex += 3;
+    }
+    FastLED.show();
+}
+
+void TopBottom::anim10(void)
+{
+    // currentPalette = bhw4_063_p;
+    CRGBPalette32 currentPalette = songoflight;
+    uint8_t brightness = 96;
+    uint8_t colorIndex = startIndex;
+
+    for(int brlen = 0; brlen < BRANCH_LEN; brlen++) {  // 0...18
+        for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
+            leds[matrix[brlen][branch]] = ColorFromPalette(currentPalette, colorIndex, brightness, currentBlending);
+        }
+        colorIndex += 3;
+    }
+    FastLED.show();
+}
+
+
 void TopBottom::run(void)
 {
     if(_allAnims) {
@@ -244,8 +280,14 @@ void TopBottom::run(void)
         }
     }
 
-    // Motion speed
-    startIndex = startIndex - 1;
+    if(_slower) {
+        EVERY_N_MILLISECONDS(8) {
+            // Motion speed
+            startIndex = startIndex - 1;
+        }
+    } else {
+        startIndex = startIndex - 1;
+    }
 
     switch(_anim) {
         case 0: anim0(); break;
@@ -257,6 +299,8 @@ void TopBottom::run(void)
         case 6: anim6(); break;
         case 7: anim7(); break; // cluster
         case 8: anim8(); break;
+        case 9: anim9(); break;
+        case 10: anim10(); break;
     }
 }
 
