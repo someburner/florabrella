@@ -33,7 +33,7 @@ class TopBottom {
     void anim10();
 
     bool _allAnims = true;
-    bool _slower = true;
+    bool _slower = false;
     uint8_t _anim = 0;
     const uint8_t _maxAnims = 9;
 
@@ -142,7 +142,7 @@ void TopBottom::anim5(void)
 void TopBottom::anim6(void)
 {
     currentPalette = PartyColors_p;
-    uint8_t brightness = 96;
+    uint8_t brightness = 128;
     uint8_t colorIndex = startIndex;
 
     for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
@@ -244,6 +244,7 @@ void TopBottom::anim9(void)
     CRGBPalette32 currentPalette = ofaurora;
     uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
+    _slower = true;
 
     for(int brlen = 0; brlen < BRANCH_LEN; brlen++) {  // 0...18
         for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
@@ -260,6 +261,7 @@ void TopBottom::anim10(void)
     CRGBPalette32 currentPalette = songoflight;
     uint8_t brightness = 96;
     uint8_t colorIndex = startIndex;
+    _slower = true;
 
     for(int brlen = 0; brlen < BRANCH_LEN; brlen++) {  // 0...18
         for(int branch = 0; branch < BRANCHES; branch++) { // 0...7
